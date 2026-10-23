@@ -25,6 +25,9 @@ popups come later.
 If a site uses a Pro widget that Modulix does not have yet, that widget stays empty while Modulix is active. Check
 the list above before switching.
 
+Planned: **Modulix MCP** - a Model Context Protocol server, so an AI agent can build and edit pages, templates and
+design on an Elementor site (structure, widgets, styles, Theme Builder conditions) and check the result.
+
 ## Requirements
 
 - WordPress with Elementor (free) 3.34 or newer; tested with 3.34.2 and 4.3.5
