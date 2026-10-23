@@ -3,6 +3,7 @@ namespace Modulix\Modules\ThemeBuilder\Classes;
 // Modulix: derived from Elementor Pro 4.0.4, modules/theme-builder/classes/templates-types-manager.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): only the header and footer document types in phase 1.
+// Modified by Modulix (2026-10-23, plan 5): single, single-post, single-page and error-404 added. Not yet: section (Elementor core's section type serves those templates), archive and search-results (with the posts widgets, plan 6).
 
 use Modulix\Modules\ThemeBuilder\Documents;
 use Modulix\Plugin;
@@ -38,6 +39,10 @@ class Templates_Types_Manager {
 		$this->docs_types = [
 			'header' => Documents\Header::get_class_full_name(),
 			'footer' => Documents\Footer::get_class_full_name(),
+			'single' => Documents\Single::get_class_full_name(),
+			'single-post' => Documents\Single_Post::get_class_full_name(),
+			'single-page' => Documents\Single_Page::get_class_full_name(),
+			'error-404' => Documents\Error_404::get_class_full_name(),
 		];
 
 		foreach ( $this->docs_types as $type => $class_name ) {

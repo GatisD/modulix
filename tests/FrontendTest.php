@@ -29,7 +29,7 @@ final class FrontendTest extends TestCase {
     }
 
     public function test_registry_has_plan3_modules_before_no_upsell(): void {
-        $this->assertSame(['dynamic-tags', 'theme-builder', 'custom-css', 'sticky', 'motion-fx', 'nav-menu', 'floating-buttons', 'frontend', 'no-upsell'],
+        $this->assertSame(['dynamic-tags', 'theme-builder', 'custom-css', 'sticky', 'motion-fx', 'nav-menu', 'floating-buttons', 'gallery', 'library', 'frontend', 'no-upsell'],
             \Modulix\Plugin::registry()->ids());
     }
 }

@@ -12,6 +12,10 @@ final class NoUpsell implements ModuleInterface {
     private const INFO_TRANSIENT = 'elementor_remote_info_api_data_';
     /** Hooks of the core Promotions module that stay: its control type is used by core controls. */
     private const KEEP_HOOKS = ['elementor/controls/register'];
+    /** Elementor 4 admin top bar: the upgrade button comes from Elementor One account data, not from a filter. */
+    public const ADMIN_CSS = '[data-test="header-upgrade-button"]{display:none!important}';
+    /** Elementor 4 admin sidebar: hasPro only hides its "Upgrade plan" button (editor-one-sidebar-navigation.js). */
+    public const SIDEBAR_JS = 'if (window.editorOneSidebarConfig) { window.editorOneSidebarConfig.hasPro = true; }';
 
     public function boot(): void {
         $this->unhook_core_promotions();
@@ -45,6 +49,19 @@ final class NoUpsell implements ModuleInterface {
             if (is_array($submenu)) {
                 $submenu = self::remove_submenu_slug($submenu, 'elementor-one-upgrade');
             }
+        });
+        add_action('admin_head', static function (): void {
+            echo '<style id="modulix-no-upsell">' . self::ADMIN_CSS . '</style>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- constant
+        });
+        add_action('admin_enqueue_scripts', static function (): void {
+            wp_add_inline_script('editor-one-sidebar-navigation', self::SIDEBAR_JS, 'before');
+        }, 100);
+        // Elementor's Theme Builder app without Pro is only an upgrade screen (#site-editor/promotion). The app page
+        // prints its own HTML (no admin_head); this runs before the app's scripts and opens the theme templates list.
+        add_action('elementor/app/init', static function (): void {
+            add_action('wp_print_footer_scripts', static function (): void {
+                echo self::theme_builder_redirect_script(admin_url('edit.php?post_type=elementor_library&tabs_group=theme')); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- JSON-encoded URL
+            }, 0);
         });
         // "Install this integration" cards (e.g. Ally) are added to the editor config before this filter runs.
         add_filter('elementor/editor/localize_settings', [self::class, 'without_integration_promos']);
@@ -114,6 +131,10 @@ final class NoUpsell implements ModuleInterface {
         if ($remove) {
             $manager->remove_control_from_stack($stack->get_unique_name(), array_values(array_unique($remove)));
         }
+    }
+
+    public static function theme_builder_redirect_script(string $list_url): string {
+        return '<script>if (/^#\\/?site-editor/.test(location.hash)) { location.replace(' . json_encode($list_url, JSON_HEX_TAG) . '); }</script>';
     }
 
     public static function without_integration_promos(array $env): array {

@@ -74,4 +74,16 @@ final class NoUpsellTest extends TestCase {
     public function test_no_upsell_is_registered_last(): void {
         $this->assertSame('no-upsell', array_slice(\Modulix\Plugin::registry()->ids(), -1)[0]);
     }
+
+    public function test_theme_builder_promotion_route_redirects_to_theme_templates(): void {
+        $js = NoUpsell::theme_builder_redirect_script('https://x.test/wp-admin/edit.php?post_type=elementor_library&tabs_group=theme');
+        $this->assertStringContainsString('site-editor', $js);
+        $this->assertStringContainsString('location.replace("https:\\/\\/x.test\\/wp-admin\\/edit.php?post_type=elementor_library&tabs_group=theme")', $js);
+        $this->assertStringStartsWith('<script>', $js);
+    }
+
+    public function test_elementor_one_admin_upgrade_buttons_are_switched_off(): void {
+        $this->assertStringContainsString('[data-test="header-upgrade-button"]', NoUpsell::ADMIN_CSS);
+        $this->assertSame('if (window.editorOneSidebarConfig) { window.editorOneSidebarConfig.hasPro = true; }', NoUpsell::SIDEBAR_JS);
+    }
 }

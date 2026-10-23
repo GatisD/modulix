@@ -11,6 +11,8 @@ final class Plugin {
         $registry->add('motion-fx', fn() => new ElementorModule(\Modulix\Modules\MotionFx\Module::class));
         $registry->add('nav-menu', fn() => new ElementorModule(\Modulix\Modules\NavMenu\Module::class));
         $registry->add('floating-buttons', fn() => new ElementorModule(\Modulix\Modules\FloatingButtons\Module::class));
+        $registry->add('gallery', fn() => new ElementorModule(\Modulix\Modules\Gallery\Module::class));
+        $registry->add('library', fn() => new ElementorModule(\Modulix\Modules\Library\Module::class));
         $registry->add('frontend', fn() => new Frontend());
         $registry->add('no-upsell', fn() => new NoUpsell());
         return $registry;

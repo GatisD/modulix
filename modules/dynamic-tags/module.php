@@ -3,8 +3,10 @@ namespace Modulix\Modules\DynamicTags;
 // Modulix: derived from Elementor Pro 4.0.4, modules/dynamic-tags/module.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): licence checks, ACF/Toolset/Pods, author meta filter and WooCommerce redirect removed; tags limited to Site_Logo and Site_URL.
+// Modified by Modulix (2026-10-23, plan 5): post, archive, site, author, comments and date tags, Post_Custom_Field, the author meta save filter and the ACF component (active with ACF, no licence gate) restored. Not restored yet: Internal_URL, Reload_Page, Request_Parameter, Lightbox, Shortcode, Contact_URL, User_Info, User_Profile_Picture (input-reflecting or action tags, after a security review); Toolset, Pods.
 
 use Elementor\Modules\DynamicTags\Module as TagsModule;
+use Modulix\Modules\DynamicTags\ACF;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -28,14 +30,53 @@ class Module extends TagsModule {
 
 	const WOOCOMMERCE_GROUP = 'woocommerce';
 
+	public function __construct() {
+		parent::__construct();
+
+		$this->add_component( 'author-meta-filter', new Components\Author_Meta_Filter() );
+
+		// ACF 5 and up
+		if ( class_exists( '\acf' ) && function_exists( 'acf_get_field_groups' ) ) {
+			$this->add_component( 'acf', new ACF\Module() );
+		}
+
+		add_filter( 'elementor/document/save/data', [ $this->get_component( 'author-meta-filter' ), 'filter' ], 10, 2 );
+	}
+
 	public function get_name() {
 		return 'tags';
 	}
 
 	public function get_tag_classes_names() {
 		return [
+			'Archive_Description',
+			'Archive_Meta',
+			'Archive_Title',
+			'Archive_URL',
+			'Author_Info',
+			'Author_Meta',
+			'Author_Name',
+			'Author_Profile_Picture',
+			'Author_URL',
+			'Comments_Number',
+			'Comments_URL',
+			'Page_Title',
+			'Post_Date',
+			'Post_Excerpt',
+			'Post_Featured_Image',
+			'Post_Gallery',
+			'Post_ID',
+			'Post_Terms',
+			'Post_Time',
+			'Post_Title',
+			'Post_URL',
 			'Site_Logo',
+			'Site_Tagline',
+			'Site_Title',
 			'Site_URL',
+			'Current_Date_Time',
+			'Featured_Image_Data',
+			'Post_Custom_Field',
 		];
 	}
 
@@ -66,5 +107,12 @@ class Module extends TagsModule {
 				'title' => esc_html__( 'WooCommerce', 'modulix' ),
 			],
 		];
+	}
+
+	// TODO: Remove this in 3.37.0
+	public static function add_v4_svg_category( $categories ) {
+		return defined( 'Elementor\Modules\DynamicTags\Module::SVG_CATEGORY' )
+			? array_merge( $categories, [ \Elementor\Modules\DynamicTags\Module::SVG_CATEGORY ] )
+			: $categories;
 	}
 }

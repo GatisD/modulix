@@ -3,6 +3,7 @@ namespace Modulix\Modules\ThemeBuilder;
 // Modulix: derived from Elementor Pro 4.0.4, modules/theme-builder/module.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): front-end and template-list parts only. Removed: admin menus and Theme Builder app, editor panel template and conditions config, new-template dialog fields, promotion notice, finder item, import/export hooks, conditions repeater control. Widgets limited to Site_Logo.
+// Modified by Modulix (2026-10-23, plan 5): theme-post/page/site/archive title widgets added; create_new_dialog_types restored (location labels, legacy Single hidden).
 
 use Elementor\Controls_Manager;
 use Elementor\Core\Base\Document;
@@ -10,6 +11,7 @@ use Elementor\TemplateLibrary\Source_Local;
 use Modulix\Base\Module_Base;
 use Modulix\Core\Utils;
 use Modulix\Modules\ThemeBuilder\Classes;
+use Modulix\Modules\ThemeBuilder\Documents\Single;
 use Modulix\Modules\ThemeBuilder\Documents\Theme_Document;
 use Modulix\Plugin;
 
@@ -43,6 +45,13 @@ class Module extends Module_Base {
 	public function get_widgets() {
 		return [
 			'Site_Logo',
+			'Site_Title',
+			'Page_Title',
+			'Post_Title',
+			'Post_Excerpt',
+			'Post_Content',
+			'Post_Featured_Image',
+			'Archive_Title',
 		];
 	}
 
@@ -94,6 +103,26 @@ class Module extends Module_Base {
 		}
 
 		return $document;
+	}
+
+	public function create_new_dialog_types( $types ) {
+		/**
+		 * @var Theme_Document[] $document_types
+		 */
+		foreach ( $types as $type => $label ) {
+			$document_type = Plugin::elementor()->documents->get_document_type( $type );
+			$instance = new $document_type();
+
+			if ( $instance instanceof Theme_Document && 'section' !== $type ) {
+				$types[ $type ] .= $instance->get_location_label();
+			}
+
+			if ( Single::class === $document_type ) {
+				unset( $types[ $type ] );
+			}
+		}
+
+		return $types;
 	}
 
 	public function register_controls( Controls_Manager $controls_manager ) {
@@ -164,5 +193,6 @@ class Module extends Module_Base {
 		// Admin
 		add_action( 'admin_head', [ $this, 'admin_head' ] );
 		add_action( 'manage_' . Source_Local::CPT . '_posts_custom_column', [ $this, 'admin_columns_content' ], 10, 2 );
+		add_filter( 'elementor/template-library/create_new_dialog_types', [ $this, 'create_new_dialog_types' ] );
 	}
 }
