@@ -3,4 +3,4 @@
 Please report vulnerabilities privately through GitHub: **Security -> Report a vulnerability** on this repository.
 Do not open a public issue for a security problem. You will get an answer within a few days.
 
-Supported: the latest release.
+Supported: the latest stable release. Fixes also go into the current pre-release (beta) while one is out.
