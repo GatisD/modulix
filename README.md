@@ -18,8 +18,9 @@ same markup as Pro. It runs in production since October 2026.
 | Dynamic tags | Post, archive, site, author, comments and date tags, Contact URL, ACF fields (text, image, URL, color, number, file, date) |
 | Editor and admin | No "Go Pro" cards, locked widgets, upgrade banners or upgrade buttons |
 
-Next: Loop Grid and loop item templates, then Forms, carousels and sliders, and the full Theme Builder app with its
-conditions editor. WooCommerce widgets and popups come later.
+Next: a readiness check that tells you before switching whether Modulix covers your site, support for themes and
+plugins that look for Elementor Pro, Custom Code and carousels; then the full Theme Builder app with its conditions
+editor, Loop Grid, Forms, popups and WooCommerce. The step-by-step plan is in [ROADMAP.md](ROADMAP.md).
 
 If a site uses a Pro widget that Modulix does not have yet, that widget stays empty while Modulix is active. Check
 the list above before switching.
@@ -59,7 +60,8 @@ python3 -m unittest discover -s tests/tools
 tools/build.sh        # build/modulix-<version>.zip
 ```
 
-Issues and pull requests are welcome. For security problems see [SECURITY.md](SECURITY.md).
+Issues and pull requests are welcome: pick a step from [ROADMAP.md](ROADMAP.md) and read
+[CONTRIBUTING.md](CONTRIBUTING.md). For security problems see [SECURITY.md](SECURITY.md).
 
 ## Licence and trademarks
 
