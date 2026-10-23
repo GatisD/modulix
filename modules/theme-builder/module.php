@@ -1,0 +1,168 @@
+<?php
+namespace Modulix\Modules\ThemeBuilder;
+// Modulix: derived from Elementor Pro 4.0.4, modules/theme-builder/module.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
+// Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
+// Modified by Modulix (2026-10-23): front-end and template-list parts only. Removed: admin menus and Theme Builder app, editor panel template and conditions config, new-template dialog fields, promotion notice, finder item, import/export hooks, conditions repeater control. Widgets limited to Site_Logo.
+
+use Elementor\Controls_Manager;
+use Elementor\Core\Base\Document;
+use Elementor\TemplateLibrary\Source_Local;
+use Modulix\Base\Module_Base;
+use Modulix\Core\Utils;
+use Modulix\Modules\ThemeBuilder\Classes;
+use Modulix\Modules\ThemeBuilder\Documents\Theme_Document;
+use Modulix\Plugin;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
+
+class Module extends Module_Base {
+
+	const ADMIN_LIBRARY_TAB_GROUP = 'theme';
+
+	public static function is_preview() {
+		return Plugin::elementor()->preview->is_preview_mode() || is_preview();
+	}
+
+	public static function get_public_post_types( $args = [] ) {
+		$post_types = Utils::get_public_post_types( $args );
+
+		// Product form WooCommerce are handled separately.
+		if ( class_exists( 'woocommerce' ) ) {
+			unset( $post_types['product'] );
+		}
+
+		return $post_types;
+	}
+
+	public function get_name() {
+		return 'theme-builder';
+	}
+
+	public function get_widgets() {
+		return [
+			'Site_Logo',
+		];
+	}
+
+	/**
+	 * @return Classes\Conditions_Manager
+	 */
+	public function get_conditions_manager() {
+		return $this->get_component( 'conditions' );
+	}
+
+	/**
+	 * @return Classes\Locations_Manager
+	 */
+	public function get_locations_manager() {
+		return $this->get_component( 'locations' );
+	}
+
+	/**
+	 * @return Classes\Preview_Manager
+	 */
+	public function get_preview_manager() {
+		return $this->get_component( 'preview' );
+	}
+
+	/**
+	 * @return Classes\Templates_Types_Manager
+	 */
+	public function get_types_manager() {
+		return $this->get_component( 'templates_types' );
+	}
+
+	/**
+	 * @param $post_id
+	 *
+	 * @return Theme_Document
+	 */
+	public function get_document( $post_id ) {
+		$document = null;
+
+		try {
+			$document = Plugin::elementor()->documents->get( $post_id );
+		} catch ( \Exception $e ) {
+			// Do nothing.
+			unset( $e );
+		}
+
+		if ( ! empty( $document ) && ! $document instanceof Theme_Document ) {
+			$document = null;
+		}
+
+		return $document;
+	}
+
+	public function register_controls( Controls_Manager $controls_manager ) {
+		$controls_manager->register( new Classes\Control_Media_Preview() );
+	}
+
+	public function admin_head() {
+		$current_screen = get_current_screen();
+		if ( $current_screen && in_array( $current_screen->id, [ 'elementor_library', 'edit-elementor_library' ] ) ) {
+			// For column type (Supported/Unsupported).
+			$this->get_locations_manager()->register_locations();
+		}
+	}
+
+	public function admin_columns_content( $column_name, $post_id ) {
+		if ( 'elementor_library_type' === $column_name ) {
+			/** @var Document $document */
+			$document = Plugin::elementor()->documents->get( $post_id );
+
+			if ( $document instanceof Theme_Document ) {
+				$location_label = $document->get_location_label();
+
+				if ( $location_label ) {
+					echo ' - ' . esc_html( $location_label );
+				}
+			}
+		}
+	}
+
+	public function get_template_type( $post_id ) {
+		return Source_Local::get_template_type( $post_id );
+	}
+
+	public function is_theme_template( $post_id ) {
+		$document = Plugin::elementor()->documents->get( $post_id );
+
+		return $document instanceof Theme_Document;
+	}
+
+	/**
+	 * Add attributes to the document wrapper element.
+	 *
+	 * @param array $attributes - The document's wrapper element attributes.
+	 * @param Document $document
+	 *
+	 * @return array
+	 */
+	public function add_document_attributes( array $attributes, Document $document ): array {
+		$attributes['data-elementor-post-type'] = $document->get_post()->post_type;
+
+		return $attributes;
+	}
+
+	public function __construct() {
+		parent::__construct();
+
+		require __DIR__ . '/api.php';
+
+		$this->add_component( 'theme_support', new Classes\Theme_Support() );
+		$this->add_component( 'conditions', new Classes\Conditions_Manager() );
+		$this->add_component( 'templates_types', new Classes\Templates_Types_Manager() );
+		$this->add_component( 'preview', new Classes\Preview_Manager() );
+		$this->add_component( 'locations', new Classes\Locations_Manager() );
+
+		add_action( 'elementor/controls/register', [ $this, 'register_controls' ] );
+		add_filter( 'elementor/document/wrapper_attributes', [ $this, 'add_document_attributes' ], 10, 2 );
+
+		// Admin
+		add_action( 'admin_head', [ $this, 'admin_head' ] );
+		add_action( 'manage_' . Source_Local::CPT . '_posts_custom_column', [ $this, 'admin_columns_content' ], 10, 2 );
+	}
+}
