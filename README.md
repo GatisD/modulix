@@ -26,7 +26,8 @@ If a site uses a Pro widget that Modulix does not have yet, that widget stays em
 readiness check (step 4 below, from 0.7.0-beta.1) lists every such widget, dynamic tag, template type and feature before you switch.
 
 Planned: **Modulix MCP** - a Model Context Protocol server, so an AI agent can build and edit pages, templates and
-design on an Elementor site (structure, widgets, styles, Theme Builder conditions) and check the result.
+design on an Elementor site (structure, widgets, styles, Theme Builder conditions) and check the result. It takes the
+place of Elementor's AI features: you connect the agent you choose, for example Claude or Codex.
 
 ## Requirements
 

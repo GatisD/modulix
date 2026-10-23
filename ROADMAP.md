@@ -144,10 +144,11 @@ each entry.
 ## Not planned
 
 Licence checks, Elementor Connect, telemetry and anything that needs Elementor's servers (cloud templates, kits from
-the cloud, AI). Payments and Notes may come later. Elementor 4 atomic widgets follow once the atomic editor is the
+the cloud, Elementor AI). AI help comes through Modulix MCP instead (see Later). Payments and Notes may come later. Elementor 4 atomic widgets follow once the atomic editor is the
 default in Elementor.
 
 ## Later
 
 **Modulix MCP**: a Model Context Protocol server, so an AI agent can build and edit pages, templates and design on an
-Elementor site and check the result.
+Elementor site and check the result. It takes the place of Elementor's AI features: you connect the agent you choose
+(for example Claude or Codex) instead of buying AI credits from one vendor.
