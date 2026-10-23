@@ -13,6 +13,9 @@ final class Plugin {
         $registry->add('floating-buttons', fn() => new ElementorModule(\Modulix\Modules\FloatingButtons\Module::class));
         $registry->add('gallery', fn() => new ElementorModule(\Modulix\Modules\Gallery\Module::class));
         $registry->add('library', fn() => new ElementorModule(\Modulix\Modules\Library\Module::class));
+        $registry->add('query-control', fn() => new ElementorModule(\Modulix\Modules\QueryControl\Module::class));
+        $registry->add('posts', fn() => new ElementorModule(\Modulix\Modules\Posts\Module::class));
+        $registry->add('editor', fn() => new Editor());
         $registry->add('frontend', fn() => new Frontend());
         $registry->add('no-upsell', fn() => new NoUpsell());
         return $registry;

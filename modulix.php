@@ -2,16 +2,16 @@
 /**
  * Plugin Name: Modulix
  * Plugin URI: https://github.com/GatisD/modulix
- * Description: Open-source replacement for Elementor Pro features: Theme Builder (header, footer, single, 404), theme widgets, Gallery, Template, dynamic tags incl. ACF, Motion Effects, Sticky, Nav Menu, Floating Buttons, Custom CSS. Contains code derived from Elementor Pro (GPLv3), modified - see NOTICE.md.
+ * Description: Open-source replacement for Elementor Pro features: Theme Builder (header, footer, single, archive, search, 404), Posts, Archive Posts, Portfolio, theme widgets, Gallery, Template, dynamic tags incl. ACF, Motion Effects, Sticky, Nav Menu, Floating Buttons, Custom CSS. Contains code derived from Elementor Pro (GPLv3), modified - see NOTICE.md.
  * Author: Gatis Daugavietis
- * Version: 0.5.0
+ * Version: 0.6.0
  * Requires PHP: 8.1
  * Requires Plugins: elementor
  * License: GPL-3.0-or-later
  */
 defined('ABSPATH') || exit;
 
-define('MODULIX_VERSION', '0.5.0');
+define('MODULIX_VERSION', '0.6.0');
 define('MODULIX_PATH', plugin_dir_path(__FILE__));
 define('MODULIX_URL', plugins_url('/', __FILE__));
 define('MODULIX_ASSETS_PATH', MODULIX_PATH . 'assets/');

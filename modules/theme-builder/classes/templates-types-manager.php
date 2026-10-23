@@ -4,6 +4,7 @@ namespace Modulix\Modules\ThemeBuilder\Classes;
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): only the header and footer document types in phase 1.
 // Modified by Modulix (2026-10-23, plan 5): single, single-post, single-page and error-404 added. Not yet: section (Elementor core's section type serves those templates), archive and search-results (with the posts widgets, plan 6).
+// Modified by Modulix (2026-10-23, plan 6a): archive and search-results added (Pro's order).
 
 use Modulix\Modules\ThemeBuilder\Documents;
 use Modulix\Plugin;
@@ -42,6 +43,8 @@ class Templates_Types_Manager {
 			'single' => Documents\Single::get_class_full_name(),
 			'single-post' => Documents\Single_Post::get_class_full_name(),
 			'single-page' => Documents\Single_Page::get_class_full_name(),
+			'archive' => Documents\Archive::get_class_full_name(),
+			'search-results' => Documents\Search_Results::get_class_full_name(),
 			'error-404' => Documents\Error_404::get_class_full_name(),
 		];
 

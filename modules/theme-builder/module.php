@@ -4,6 +4,7 @@ namespace Modulix\Modules\ThemeBuilder;
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): front-end and template-list parts only. Removed: admin menus and Theme Builder app, editor panel template and conditions config, new-template dialog fields, promotion notice, finder item, import/export hooks, conditions repeater control. Widgets limited to Site_Logo.
 // Modified by Modulix (2026-10-23, plan 5): theme-post/page/site/archive title widgets added; create_new_dialog_types restored (location labels, legacy Single hidden).
+// Modified by Modulix (2026-10-23, plan 6a): Archive_Posts added (the posts module is always present in Modulix).
 
 use Elementor\Controls_Manager;
 use Elementor\Core\Base\Document;
@@ -52,6 +53,7 @@ class Module extends Module_Base {
 			'Post_Content',
 			'Post_Featured_Image',
 			'Archive_Title',
+			'Archive_Posts',
 		];
 	}
 

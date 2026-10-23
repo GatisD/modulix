@@ -7,20 +7,19 @@ conditions. No licence key, no upsells in the editor.
 Modulix is built from Elementor Pro's own GPL code (see [How it is built](#how-it-is-built)), so it renders the
 same markup as Pro. It runs in production since October 2026.
 
-## What works today (0.5.x)
+## What works today (0.6.x)
 
 | Area | Included |
 |---|---|
-| Theme Builder | Header, footer, single, single post, single page and 404 templates with all display conditions; the Theme Builder menu opens the theme templates list |
+| Theme Builder | Header, footer, single, single post, single page, archive, search results and 404 templates with all display conditions; the Theme Builder menu opens the theme templates list |
 | Theme widgets | Site Logo, Site Title, Page Title, Post Title, Post Content, Post Excerpt, Post Featured Image, Archive Title |
-| Widgets | Nav Menu (dropdown and mobile menu), Template, Gallery, Floating Buttons (contact buttons and floating bars) |
+| Widgets | Posts, Portfolio, Archive Posts (with pagination and load more), Nav Menu (dropdown and mobile menu), Template, Gallery, Floating Buttons (contact buttons and floating bars) |
 | Effects | Sticky, Motion Effects (scrolling and mouse), Custom CSS on elements and pages |
 | Dynamic tags | Post, archive, site, author, comments and date tags, Contact URL, ACF fields (text, image, URL, color, number, file, date) |
 | Editor and admin | No "Go Pro" cards, locked widgets, upgrade banners or upgrade buttons |
 
-Next release (0.6, in testing): Posts, Portfolio and Archive Posts widgets, archive and search results templates,
-pagination and "load more". After that: Loop Grid, Forms, carousels and sliders. WooCommerce widgets and popups come
-later.
+Next: Loop Grid and loop item templates, then Forms, carousels and sliders, and the full Theme Builder app with its
+conditions editor. WooCommerce widgets and popups come later.
 
 If a site uses a Pro widget that Modulix does not have yet, that widget stays empty while Modulix is active. Check
 the list above before switching.

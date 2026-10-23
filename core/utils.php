@@ -4,7 +4,10 @@ namespace Modulix\Core;
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): kept get_public_post_types, set_global_authordata, _unstable_get_super_global_value and its two sanitizers; other helpers removed.
 // Modified by Modulix (2026-10-23, plan 5): get_page_title, get_taxonomies, get_the_archive_url (without the loop builder taxonomy branch) and trim_words restored for the theme widgets and tags.
+// Modified by Modulix (2026-10-23, plan 6a): _unstable_get_document_for_edit and get_current_post_id restored for the posts and query control modules.
 
+
+use Modulix\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -291,5 +294,32 @@ class Utils {
 		}
 
 		return implode( ' ', $words );
+	}
+
+	/**
+	 * TODO: Use a core method instead (after Pro minimum requirements is updated).
+	 * @throws \Exception
+	 */
+	public static function _unstable_get_document_for_edit( $id ) {
+		$document = Plugin::elementor()->documents->get( $id );
+
+		if ( ! $document ) {
+			throw new \Exception( 'Not found.' );
+		}
+
+		if ( ! $document->is_editable_by_current_user() ) {
+			throw new \Exception( 'Access denied.' );
+		}
+
+		return $document;
+	}
+
+
+	public static function get_current_post_id() {
+		if ( isset( Plugin::elementor()->documents ) && Plugin::elementor()->documents->get_current() ) {
+			return Plugin::elementor()->documents->get_current()->get_main_id();
+		}
+
+		return get_the_ID();
 	}
 }

@@ -3,10 +3,12 @@ namespace Modulix\Modules\ThemeBuilder\Classes;
 // Modulix: derived from Elementor Pro 4.0.4, modules/theme-builder/classes/locations-manager.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): pagination fixes for single/archive templates removed until those locations are lifted.
+// Modified by Modulix (2026-10-23, plan 6a): pagination fixes restored (posts module and archive documents lifted).
 
 use Elementor\Core\Base\Elements_Iteration_Actions\Assets;
 use Modulix\Core\Utils;
 use Modulix\Modules\ThemeBuilder\Documents\Theme_Document;
+use Modulix\Modules\Posts\Traits\Pagination_Trait;
 use Modulix\Modules\ThemeBuilder\Module;
 use Modulix\Plugin;
 use Elementor\Modules\PageTemplates\Module as PageTemplatesModule;
@@ -17,6 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Locations_Manager {
+	use Pagination_Trait;
+
 	protected $core_locations = [];
 	protected $locations = [];
 	protected $did_locations = [];
@@ -31,6 +35,8 @@ class Locations_Manager {
 
 		add_filter( 'the_content', [ $this, 'builder_wrapper' ], 9999999 ); // 9999999 = after preview->builder_wrapper
 		add_filter( 'template_include', [ $this, 'template_include' ], 11 ); // 11 = after WooCommerce.
+		add_filter( 'pre_handle_404', [ $this, 'should_allow_pagination_on_single_templates' ], 10, 2 );
+		add_filter( 'pre_handle_404', [ $this, 'should_allow_pagination_on_archive_templates' ], 11, 2 );
 		add_action( 'template_redirect', [ $this, 'register_locations' ] );
 
 		add_filter( 'elementor/admin/create_new_post/meta', [ $this, 'filter_add_location_meta_on_create_new_post' ] );
@@ -40,6 +46,101 @@ class Locations_Manager {
 		}
 
 	}
+
+	/**
+	 * Fix WP 5.5 pagination issue.
+	 *
+	 * Return true to mark that it's handled and avoid WP to set it as 404.
+	 *
+	 * @see https://github.com/elementor/elementor/issues/12126
+	 * @see https://core.trac.wordpress.org/ticket/50976
+	 *
+	 * Based on the logic at \WP::handle_404.
+	 *
+	 * @param $handled - Default false.
+	 * @param $wp_query
+	 *
+	 * @return bool
+	 */
+	public function should_allow_pagination_on_single_templates( $handled, $wp_query ) {
+		if ( $handled || empty( $wp_query->query_vars['page'] ) || empty( $wp_query->post ) ) {
+			return $handled;
+		}
+
+		$current_post_id = get_the_ID();
+		$documents = Module::instance()->get_conditions_manager()->get_documents_for_location( 'single' );
+
+		if ( empty( $documents ) ) {
+			return $handled;
+		}
+
+		foreach ( $documents as $document ) {
+			$post_id = $document->get_post()->ID;
+
+			// Will be handled by the pre_handle_404 filter in the posts module.
+			if ( $current_post_id === $post_id ) {
+				continue;
+			}
+
+			$document = Plugin::elementor()->documents->get( $post_id );
+
+			if ( $this->is_valid_pagination( $document->get_elements_data(), $wp_query->query_vars['page'] ) ) {
+				$handled = true;
+			}
+		}
+
+		return $handled;
+	}
+
+
+	/**
+	 * Fix WP 5.5 pagination issue.
+	 *
+	 * Return true to mark that it's handled and avoid WP to set it as 404.
+	 *
+	 * @see https://github.com/elementor/elementor/issues/12126
+	 * @see https://core.trac.wordpress.org/ticket/50976
+	 *
+	 * Based on the logic at \WP::handle_404.
+	 *
+	 * @param $handled - Default false.
+	 * @param $wp_query
+	 *
+	 * @return bool
+	 */
+	public function should_allow_pagination_on_archive_templates( $handled, $wp_query ) {
+		$is_archive = is_archive() || is_home() || is_search();
+
+		if ( $handled || ! $is_archive ) {
+			return $handled;
+		}
+
+		$current_post_id = $wp_query->query['page_id'] ?? ( $wp_query->queried_object->ID ?? null );
+		$documents = Module::instance()->get_conditions_manager()->get_documents_for_location( 'archive' );
+
+		if ( empty( $documents ) ) {
+			return $handled;
+		}
+
+		foreach ( $documents as $document ) {
+			$post_id = $document->get_post()->ID;
+
+			// Will be handled by the pre_handle_404 filter in the posts module.
+			if ( $current_post_id === $post_id ) {
+				continue;
+			}
+
+			$document = Plugin::elementor()->documents->get( $post_id );
+			$current_page = max( 1, get_query_var( 'paged' ), get_query_var( 'page' ) );
+
+			if ( $this->is_valid_pagination( $document->get_elements_data(), $current_page ) ) {
+				$handled = true;
+			}
+		}
+
+		return $handled;
+	}
+
 
 	public function register_locations() {
 		// Run Once.

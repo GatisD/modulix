@@ -3,6 +3,7 @@ namespace Modulix\Modules\ThemeBuilder\Documents;
 // Modulix: derived from Elementor Pro 4.0.4, modules/theme-builder/documents/theme-page-document.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): archive branch of filter_body_classes removed until the archive document is lifted (plan 6).
+// Modified by Modulix (2026-10-23, plan 6a): archive branch restored (archive document lifted).
 
 use Elementor\Controls_Manager;
 use Elementor\Core\DocumentTypes\Post;
@@ -111,7 +112,9 @@ abstract class Theme_Page_Document extends Theme_Document {
 
 		$add_body_class = false;
 
-		if ( $this instanceof Single_Base && ( is_singular() || is_404() ) && ! $is_archive_template ) {
+		if ( $this instanceof Archive && ( is_archive() || is_search() || is_home() || $is_archive_template ) ) {
+			$add_body_class = true;
+		} elseif ( $this instanceof Single_Base && ( is_singular() || is_404() ) && ! $is_archive_template ) {
 			$add_body_class = true;
 		}
 
