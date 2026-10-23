@@ -36,8 +36,9 @@ A step is ready to merge when all of these are true. Put the checklist in the pu
 2. **Trims in separate commits.** Each commit removes one thing and says why: licence checks, Elementor Connect,
    telemetry, upsells, or code the module does not need. Do not reformat lifted files; small diffs are what make the
    lift reviewable.
-3. **Registered.** The module is added to `src/Plugin.php`, and the coverage list (roadmap step F1) names every widget,
-   dynamic tag and document type the step adds.
+3. **Registered.** The module is added to `src/Plugin.php` and to `src/Compat/ProModulesManager.php` (its Pro
+   name), and `src/Coverage.php` names every widget, dynamic tag and document type the step adds. The tests fail
+   until all three agree.
 4. **Endpoints listed.** The pull request has a table of every AJAX action and REST route the lifted code registers:
    its permission check, and which request fields reach a database query, the file system or an outgoing request.
    Write "none" if there are none.

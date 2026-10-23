@@ -17,4 +17,7 @@ working after the switch. Upstream: Elementor Pro 4.0.4.
 5. **Parity.** Each module is compared with Elementor Pro on a test site before release: server markup per
    document, layout at desktop and mobile width, scroll and menu states, console errors, PHP log.
 
-`ELEMENTOR_PRO_VERSION` stays undefined on purpose: themes and plugins that see it call Elementor Pro classes.
+`ELEMENTOR_PRO_VERSION` stays undefined on purpose (roadmap step F6 measures whether an opt-in mode is worth it).
+Themes and plugins that call Elementor Pro classes get Modulix's classes through `src/Compat/ProAliases.php`:
+`ElementorPro\X` resolves to `Modulix\X` when Modulix has it, and `ElementorPro\Plugin::instance()` answers
+`modules_manager->get_modules()`. Names Modulix lacks stay undefined, so `class_exists()` checks keep working.

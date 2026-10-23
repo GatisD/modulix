@@ -7,7 +7,7 @@ conditions. No licence key, no upsells in the editor.
 Modulix is built from Elementor Pro's own GPL code (see [How it is built](#how-it-is-built)), so it renders the
 same markup as Pro. It runs in production since October 2026.
 
-## What works today (0.6.x)
+## What works today (0.7.0-beta)
 
 | Area | Included |
 |---|---|
@@ -17,13 +17,13 @@ same markup as Pro. It runs in production since October 2026.
 | Effects | Sticky, Motion Effects (scrolling and mouse), Custom CSS on elements and pages |
 | Dynamic tags | Post, archive, site, author, comments and date tags, Contact URL, ACF fields (text, image, URL, color, number, file, date) |
 | Editor and admin | No "Go Pro" cards, locked widgets, upgrade banners or upgrade buttons |
+| Switching | Readiness check next to an active Elementor Pro (Tools -> Modulix, `wp modulix check`); themes and plugins that call Elementor Pro classes get the matching Modulix classes |
 
-Next: a readiness check that tells you before switching whether Modulix covers your site, support for themes and
-plugins that look for Elementor Pro, Custom Code and carousels; then the full Theme Builder app with its conditions
-editor, Loop Grid, Forms, popups and WooCommerce. The step-by-step plan is in [ROADMAP.md](ROADMAP.md).
+Next: Custom Code and carousels (0.7.0); then the full Theme Builder app with its conditions editor, Loop Grid,
+Forms, popups and WooCommerce. The step-by-step plan is in [ROADMAP.md](ROADMAP.md).
 
-If a site uses a Pro widget that Modulix does not have yet, that widget stays empty while Modulix is active. Check
-the list above before switching.
+If a site uses a Pro widget that Modulix does not have yet, that widget stays empty while Modulix is active. The
+readiness check (step 3 below) lists every such widget, dynamic tag, template type and feature before you switch.
 
 Planned: **Modulix MCP** - a Model Context Protocol server, so an AI agent can build and edit pages, templates and
 design on an Elementor site (structure, widgets, styles, Theme Builder conditions) and check the result.
@@ -37,8 +37,11 @@ design on an Elementor site (structure, widgets, styles, Theme Builder condition
 
 1. Download `modulix-x.y.z.zip` from [Releases](../../releases).
 2. Back up the site.
-3. Plugins -> Add New -> Upload Plugin, upload the zip. Do not activate yet.
-4. Deactivate Elementor Pro, then activate Modulix. Modulix refuses to activate while Elementor Pro is active.
+3. Plugins -> Add New -> Upload Plugin, upload the zip and activate it while Elementor Pro is still active. Modulix
+   then runs only its readiness check: open Tools -> Modulix and press "Run the check" (or run `wp modulix check`).
+   It lists the Pro widgets, dynamic tags, template types and features your pages use that Modulix does not cover
+   yet, with links to those pages, and the themes and plugins that call Elementor Pro.
+4. When nothing you need is missing, deactivate Elementor Pro. Modulix switches to full mode by itself.
 5. Regenerate Elementor's CSS files (in Elementor's Tools) and clear any page cache.
 
 To go back: deactivate Modulix and activate Elementor Pro again. Modulix does not change your templates or settings.
