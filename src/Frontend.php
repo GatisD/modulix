@@ -42,7 +42,20 @@ final class Frontend implements ModuleInterface {
         wp_enqueue_script('modulix-elements-handlers');
         $settings = self::config(admin_url('admin-ajax.php'), wp_create_nonce('modulix-frontend'), MODULIX_ASSETS_URL,
             get_rest_url(), '1' === get_option('elementor_lazy_load_background_images', '1'));
+        $settings = self::filter_settings($settings);
         \Elementor\Utils::print_js_config(self::HANDLE, 'ModulixFrontendConfig', $settings);
+    }
+
+    /**
+     * Keep Pro's public filter name because lifted modules and third-party integrations register against it.
+     * The optional callable makes the decision testable without loading WordPress.
+     */
+    public static function filter_settings(array $settings, ?callable $filter = null): array {
+        if ($filter !== null) {
+            return $filter('elementor_pro/frontend/localize_settings', $settings);
+        }
+
+        return apply_filters('elementor_pro/frontend/localize_settings', $settings);
     }
 
     /**

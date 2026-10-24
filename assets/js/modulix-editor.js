@@ -3,6 +3,10 @@
   'use strict';
   const __ = (window.wp && wp.i18n && wp.i18n.__) || ((text) => text);
   $(window).on('elementor:init', function () {
+    // The shipped Pro editor bundle owns Query control. Keep this earlier plain-script lift only as a fallback.
+    if (window.elementorPro && window.elementorPro.modules && window.elementorPro.modules.queryControl) {
+      return;
+    }
     const QueryControl = elementor.modules.controls.Select2.extend({
       cache: null,
       isTitlesReceived: false,

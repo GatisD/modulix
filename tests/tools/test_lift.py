@@ -50,6 +50,31 @@ class ConstantsAndAssetsTest(unittest.TestCase):
         for c in ["MODULIX_URL . 'assets/x'", "MODULIX_ASSETS_URL", "MODULIX_ASSETS_PATH", "MODULIX_PATH", "MODULIX_VERSION"]:
             self.assertIn(c, out)
 
+    def test_pro_modules_constants_map_to_modulix(self):
+        src = "<?php\nnamespace ElementorPro\\Modules\\Lottie;\n$a = ELEMENTOR_PRO_MODULES_URL; $b = ELEMENTOR_PRO_MODULES_PATH;\n"
+        out = lift.transform(src, "modules/lottie/module.php", "4.0.4", "2026-10-23")
+        self.assertNotIn("ELEMENTOR_PRO_MODULES_", out)
+        self.assertIn("MODULIX_MODULES_URL", out)
+        self.assertIn("MODULIX_MODULES_PATH", out)
+
+    def test_text_domain_with_newline_before_closing_parenthesis(self):
+        src = "<?php\nnamespace ElementorPro\\Modules\\LinkInBio;\n__( 'Link in Bio', 'elementor-pro'\n\t);\n"
+        out = lift.transform(src, "modules/link-in-bio/widgets/link-in-bio-var-7.php", "4.0.4", "2026-10-23")
+        self.assertNotIn("'elementor-pro'", out)
+        self.assertIn("'modulix'\n\t)", out)
+
+    def test_text_domain_comparison_changes_without_touching_plugin_names_or_handles(self):
+        src = """<?php
+namespace ElementorPro\\Modules\\Woocommerce;
+if ( 'woocommerce' !== $domain && 'elementor-pro' !== $domain ) {}
+$plugin = 'elementor-pro/elementor-pro.php';
+wp_enqueue_script( 'elementor-pro' );
+"""
+        out = lift.transform(src, "modules/woocommerce/widgets/base-widget.php", "4.0.4", "2026-10-23")
+        self.assertIn("'modulix' !== $domain", out)
+        self.assertIn("'elementor-pro/elementor-pro.php'", out)
+        self.assertIn("wp_enqueue_script( 'elementor-pro' )", out)
+
     def test_js_globals_renamed_and_marked(self):
         src = "var a = elementorProFrontend.config; window.ElementorProFrontendConfig; elementorProFrontendConfig;\n"
         out = lift.transform(src, "assets/js/frontend.js", "4.0.4", "2026-10-23")

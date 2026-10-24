@@ -141,6 +141,13 @@ final class NoUpsell implements ModuleInterface {
         if (isset($env['integrationWidgets'])) {
             $env['integrationWidgets'] = [];
         }
+        $env['library_connect'] = array_replace($env['library_connect'] ?? [], [
+            'is_connected' => true,
+            'current_access_level' => PHP_INT_MAX,
+            'current_access_tier' => 'agency',
+            'plan_type' => 'agency',
+            'subscription_plans' => [],
+        ]);
         return $env;
     }
 
@@ -170,7 +177,9 @@ final class NoUpsell implements ModuleInterface {
         if (!in_array($type, ['raw_html', 'promotion_control', 'divider'], true)) {
             return false;
         }
-        return str_ends_with($name, '_pro') || str_contains($name, 'promotion');
+        return str_ends_with($name, '_pro')
+            || str_contains($name, 'promotion')
+            || in_array($name, ['site_mailer_promo', 'site_mailer_promo_2'], true);
     }
 
     /** @param array<int,array<string,mixed>> $links */

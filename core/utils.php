@@ -63,6 +63,22 @@ class Utils {
 	}
 
 	/**
+	 * TODO: Use core method instead (after merging PR of the original function in core).
+	 *  PR URL: https://github.com/elementor/elementor/pull/18670.
+	 *
+	 * @param $file
+	 * @param mixed ...$args
+	 * @return false|string
+	 */
+	public static function _unstable_file_get_contents( $file, ...$args ) {
+		if ( ! is_file( $file ) || ! is_readable( $file ) ) {
+			return false;
+		}
+
+		return file_get_contents( $file, ...$args );
+	}
+
+	/**
 	 * TODO: Use core method instead (after Pro minimum requirements is updated).
 	 * PR URL: https://github.com/elementor/elementor/pull/24092
 	 */
@@ -273,6 +289,44 @@ class Utils {
 		return $url;
 	}
 
+	public static function get_ensure_upload_dir( $path ) {
+		if ( file_exists( $path . '/index.php' ) ) {
+			return $path;
+		}
+
+		wp_mkdir_p( $path );
+
+		$files = [
+			[
+				'file' => 'index.php',
+				'content' => [
+					'<?php',
+					'// Silence is golden.',
+				],
+			],
+			[
+				'file' => '.htaccess',
+				'content' => [
+					'Options -Indexes',
+					'<ifModule mod_headers.c>',
+					'	<Files *.*>',
+					'       Header set Content-Disposition attachment',
+					'	</Files>',
+					'</IfModule>',
+				],
+			],
+		];
+
+		foreach ( $files as $file ) {
+			if ( ! file_exists( trailingslashit( $path ) . $file['file'] ) ) {
+				$content = implode( PHP_EOL, $file['content'] );
+				@ file_put_contents( trailingslashit( $path ) . $file['file'], $content );
+			}
+		}
+
+		return $path;
+	}
+
 	/**
 	 * Remove words from a sentence.
 	 *
@@ -321,5 +375,61 @@ class Utils {
 		}
 
 		return get_the_ID();
+	}
+
+	public static function create_widget_instance_from_db( $post_id, $widget_id ) {
+		$document = Plugin::elementor()->documents->get( $post_id );
+		$widget_data = \Elementor\Utils::find_element_recursive( $document->get_elements_data(), $widget_id );
+
+		return Plugin::elementor()->elements_manager->create_element_instance( $widget_data );
+	}
+
+	public static function has_invalid_post_permissions( $post ): bool {
+		$is_image_attachment = 'attachment' === $post->post_type && strpos( $post->post_mime_type, 'image/' ) === 0;
+
+		if ( $is_image_attachment ) {
+			return false;
+		}
+
+		$is_private = 'private' === $post->post_status
+			&& ! current_user_can( 'read_private_posts', $post->ID );
+
+		$not_allowed = 'publish' !== $post->post_status
+			&& ! current_user_can( 'edit_post', $post->ID );
+
+		$password_required = post_password_required( $post->ID )
+			&& ! current_user_can( 'edit_post', $post->ID );
+
+		return $is_private || $not_allowed || $password_required;
+	}
+
+	public static function format_control_condition( $name, $operator, $value ) {
+		return compact( 'name', 'operator', 'value' );
+	}
+
+	public static function get_client_ip() {
+		$server_ip_keys = [
+			'HTTP_CLIENT_IP',
+			'HTTP_X_FORWARDED_FOR',
+			'HTTP_X_FORWARDED',
+			'HTTP_X_CLUSTER_CLIENT_IP',
+			'HTTP_FORWARDED_FOR',
+			'HTTP_FORWARDED',
+			'REMOTE_ADDR',
+		];
+
+		foreach ( $server_ip_keys as $key ) {
+			$value = static::_unstable_get_super_global_value( $_SERVER, $key );
+			if ( $value && filter_var( $value, FILTER_VALIDATE_IP ) ) {
+				return $value;
+			}
+		}
+
+		// Fallback local ip.
+		return '127.0.0.1';
+	}
+
+	public static function get_site_domain() {
+		return str_ireplace( 'www.', '', parse_url( home_url(), PHP_URL_HOST ) );
 	}
 }

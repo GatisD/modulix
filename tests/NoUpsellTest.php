@@ -25,6 +25,9 @@ final class NoUpsellTest extends TestCase {
             [['name' => 'sticky_pro', 'type' => 'raw_html'], true],
             [['name' => 'display_conditions_pro', 'type' => 'promotion_control'], true],
             [['name' => 'motion_effects_promotion_divider', 'type' => 'divider'], true],
+            [['name' => 'site_mailer_promo', 'type' => 'raw_html'], true],
+            [['name' => 'site_mailer_promo_2', 'type' => 'raw_html'], true],
+            [['name' => 'email_help', 'type' => 'raw_html'], false],
             [['name' => 'section_effects', 'type' => 'section'], false],
             [['name' => 'custom_css', 'type' => 'code'], false],
             [['name' => 'image_pro', 'type' => 'media'], false],
@@ -58,9 +61,26 @@ final class NoUpsellTest extends TestCase {
     }
 
     public function test_integration_widget_promos_removed(): void {
-        $env = ['integrationWidgets' => [['name' => 'ally-accessibility']], 'other' => 1];
-        $this->assertSame(['integrationWidgets' => [], 'other' => 1], NoUpsell::without_integration_promos($env));
-        $this->assertSame(['other' => 1], NoUpsell::without_integration_promos(['other' => 1]));
+        $env = [
+            'integrationWidgets' => [['name' => 'ally-accessibility']],
+            'library_connect' => [
+                'is_connected' => false,
+                'current_access_level' => 0,
+                'current_access_tier' => 'free',
+                'plan_type' => 'free',
+                'subscription_plans' => ['essential' => ['promotion_url' => 'https://upgrade.test/']],
+            ],
+            'other' => 1,
+        ];
+        $filtered = NoUpsell::without_integration_promos($env);
+
+        $this->assertSame([], $filtered['integrationWidgets']);
+        $this->assertTrue($filtered['library_connect']['is_connected']);
+        $this->assertSame(PHP_INT_MAX, $filtered['library_connect']['current_access_level']);
+        $this->assertSame('agency', $filtered['library_connect']['current_access_tier']);
+        $this->assertSame('agency', $filtered['library_connect']['plan_type']);
+        $this->assertSame([], $filtered['library_connect']['subscription_plans']);
+        $this->assertSame(1, $filtered['other']);
     }
 
     public function test_submenu_item_removed_under_any_parent(): void {

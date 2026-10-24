@@ -16,6 +16,9 @@ final class LiftedAutoloaderTest extends TestCase {
             ['Modulix\Modules\QueryControl\Module', '/p/modules/query-control/module.php'],
             ['Modulix\Core\Utils', '/p/core/utils.php'],
             ['Modulix\Base\Module_Base', '/p/base/module-base.php'],
+            // PHP class names are case-insensitive; some Pro files import with a lowercase namespace part.
+            ['Modulix\core\utils\Hints', '/p/core/utils/hints.php'],
+            ['modulix\Modules\Popup\Module', '/p/modules/popup/module.php'],
             ['Modulix\ActivationGuard', null],
             ['Modulix\Plugin', null],
             ['ElementorPro\Plugin', null],

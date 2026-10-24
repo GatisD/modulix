@@ -21,3 +21,25 @@ working after the switch. Upstream: Elementor Pro 4.0.4.
 Themes and plugins that call Elementor Pro classes get Modulix's classes through `src/Compat/ProAliases.php`:
 `ElementorPro\X` resolves to `Modulix\X` when Modulix has it, and `ElementorPro\Plugin::instance()` answers
 `modules_manager->get_modules()`. Names Modulix lacks stay undefined, so `class_exists()` checks keep working.
+
+## Upstream updates
+
+Compare releases before re-lifting:
+
+```
+python3 tools/upstream-diff.py <old-pro-root> <new-pro-root>
+```
+
+For each changed file, use `tools/lift.py --force` to lift it into a scratch directory first. Compare that output with
+the current Modulix file, then port Modulix's trims by hand. Never overwrite a trimmed file blindly.
+
+## Regenerate the editor bundle
+
+With Elementor Pro 4.0.4 available locally, regenerate the entry-trimmed bundle with:
+
+```
+python3 tools/editor-bundle.py /path/to/elementor-pro-4.0.4
+```
+
+The command writes `assets/js/modulix-editor-pro.js`. Use `--out /path/to/file.js` for a comparison build. The editor
+chunks and `assets/css/editor*.css` remain mechanical lifts listed in `docs/lift-manifest.txt`.

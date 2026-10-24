@@ -43,6 +43,25 @@ final class CoverageTest extends TestCase {
     }
 
     public function test_document_types_match_modules(): void {
-        $this->assertSame(self::names(['modules/*/documents/*.php'], self::TYPE_RE), self::sorted(Coverage::DOCUMENT_TYPES));
+        $types = self::names(['modules/*/documents/*.php', 'modules/*/document.php'], self::TYPE_RE);
+        // Some documents return Module::DOCUMENT_TYPE; read that constant from the module's module.php.
+        foreach (glob(dirname(__DIR__) . '/modules/*/document.php') ?: [] as $file) {
+            if (preg_match('/function get_type\(\)[^{]*\{\s*return\s+Module::DOCUMENT_TYPE\s*;/', (string) file_get_contents($file))
+                && preg_match("/const DOCUMENT_TYPE = '([^']+)'/", (string) file_get_contents(dirname($file) . '/module.php'), $m)) {
+                $types[] = $m[1];
+            }
+        }
+        // Others return static::DOCUMENT_TYPE (or self::) declared in the same file.
+        foreach (glob(dirname(__DIR__) . '/modules/*/documents/*.php') ?: [] as $file) {
+            $src = (string) file_get_contents($file);
+            if (!preg_match('/^\s*abstract\s+class\s/m', $src)
+                && preg_match('/function get_type\(\)[^{]*\{\s*return\s+(?:static|self)::DOCUMENT_TYPE\s*;/', $src)
+                && preg_match("/const DOCUMENT_TYPE = '([^']+)'/", $src, $m)) {
+                $types[] = $m[1];
+            }
+        }
+        $types = array_values(array_unique($types));
+        sort($types);
+        $this->assertSame($types, self::sorted(Coverage::DOCUMENT_TYPES));
     }
 }

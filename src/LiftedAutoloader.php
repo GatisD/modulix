@@ -10,7 +10,8 @@ final class LiftedAutoloader {
 
     public static function path(string $class, string $root): ?string {
         foreach (self::PREFIXES as $prefix) {
-            if (strncmp($class, $prefix, strlen($prefix)) === 0) {
+            // PHP class names are case-insensitive (some Pro files import "...\core\utils\...").
+            if (strncasecmp($class, $prefix, strlen($prefix)) === 0) {
                 $rel = strtolower(preg_replace(
                     ['/([a-z])([A-Z])/', '/_/', '/\\\\/'],
                     ['$1-$2', '-', '/'],

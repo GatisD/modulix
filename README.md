@@ -7,20 +7,35 @@ conditions. No licence key, no upsells in the editor.
 Modulix is built from Elementor Pro's own GPL code (see [How it is built](#how-it-is-built)), so it renders the
 same markup as Pro. It runs in production since October 2026.
 
-## What works today (0.7.0-beta.1; latest stable release 0.6.0)
+## What works today (0.7.0-beta.2; latest stable release 0.6.0)
 
 | Area | Included |
 |---|---|
-| Theme Builder | Header, footer, single, single post, single page, archive, search results and 404 templates with all display conditions; the Theme Builder menu opens the theme templates list |
-| Theme widgets | Site Logo, Site Title, Page Title, Post Title, Post Content, Post Excerpt, Post Featured Image, Archive Title |
-| Widgets | Posts, Portfolio, Archive Posts (with pagination and load more), Nav Menu (dropdown and mobile menu), Template, Gallery, Floating Buttons (contact buttons and floating bars) |
-| Effects | Sticky, Motion Effects (scrolling and mouse), Custom CSS on elements and pages |
+| Theme Builder | Header, footer, single, single post, single page, archive, search results and 404 templates; the Theme Builder menu opens the theme templates list |
+| Display Conditions | Rules that decide where each Theme Builder template appears |
+| Popup | Popup templates, display settings, triggers and dynamic tag |
+| Forms | Form and Login widgets, form actions, validation, uploads with WordPress-confirmed known file types and field-approved custom extensions, and submissions |
+| WP-CLI | Theme Builder condition cache reset command |
+| Site-wide assets | Custom Fonts, Custom Icons and Adobe Fonts |
+| WooCommerce | Product and archive templates, product dynamic tags, Products, Cart, Checkout, My Account, Menu Cart and purchase widgets |
+| Theme widgets | Site Logo, Site Title, Page Title, Post Title, Post Content, Post Excerpt, Post Featured Image, Archive Title, Author Box, Breadcrumbs, Post Comments, Post Info, Post Navigation, Search Form and Sitemap |
+| Loop content | Loop Item templates, Loop Grid, Loop Carousel, Taxonomy Filter and Search |
+| Widgets | Posts, Portfolio, Archive Posts (with pagination and load more), Nav Menu (dropdown and mobile menu), Template, Gallery, Global Widget, Animated Headline, Flip Box, Call to Action, Price Table, Price List, Countdown, Share Buttons, Blockquote, Table of Contents, Hotspot, Off-Canvas, Progress Tracker, Code Highlight, Slides, Video Playlist, Facebook Page, Button, Comments and Embed, Mega Menu, Lottie, Link in Bio, Nested Carousel, Media Carousel, Testimonial Carousel and Reviews, Floating Buttons (contact buttons and floating bars) |
+| Effects | Sticky, Motion Effects (scrolling and mouse), Custom CSS and custom attributes on elements and pages, page transitions and scroll snap |
+| Custom Code | Snippets in the document head, body start and body end, with conditions and import/export |
+| Editor and admin | Elementor Pro's editor scripts (nested elements, Mega Menu, Loop Filter, WooCommerce widgets, Global Widget, forms); role-based editor restrictions and element permissions; no "Go Pro" cards, locked widgets, upgrade banners or upgrade buttons |
 | Dynamic tags | Post, archive, site, author, comments and date tags, Contact URL, ACF fields (text, image, URL, color, number, file, date) |
-| Editor and admin | No "Go Pro" cards, locked widgets, upgrade banners or upgrade buttons |
-| Switching (0.7.0-beta.1) | Readiness check next to an active Elementor Pro (Tools -> Modulix, `wp modulix check`); themes and plugins that call Elementor Pro classes get the matching Modulix classes |
+| Switching (from 0.7.0-beta.1) | Readiness check next to an active Elementor Pro (Tools -> Modulix, `wp modulix check`); themes and plugins that call Elementor Pro classes get the matching Modulix classes |
 
-Next: Custom Code and carousels (0.7.0); then the full Theme Builder app with its conditions editor, Loop Grid,
-Forms, popups and WooCommerce. The step-by-step plan is in [ROADMAP.md](ROADMAP.md).
+Tested in 0.7.0-beta.2 against Elementor Pro 4.0.4 on a test site, page by page at desktop and mobile width and in
+the editor: every widget in the Widgets row except Global Widget, the theme widgets, Loop Item,
+Loop Grid, Taxonomy Filter and 21 real site pages; the output matches Pro. Included from Pro's code and reviewed, but
+not yet tested end to end: Global Widget, Loop Carousel, form submissions, form integrations and file uploads,
+WooCommerce cart, checkout and account pages, popup triggers and Custom Code. Test those on a staging copy before you
+rely on them, and report problems as issues. 0.7.0 follows once they are tested.
+
+Next: the full Theme Builder app with its conditions editor, the remaining dynamic tags, then Modulix MCP. The
+step-by-step plan is in [ROADMAP.md](ROADMAP.md).
 
 If a site uses a Pro widget that Modulix does not have yet, that widget stays empty while Modulix is active. The
 readiness check (step 4 below, from 0.7.0-beta.1) lists every such widget, dynamic tag, template type and feature before you switch.

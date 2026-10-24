@@ -1,6 +1,8 @@
 <?php
 namespace Modulix\Readiness;
 
+use Modulix\Mcp\AdminSettings;
+
 /** Tools -> Modulix: runs the readiness check on request. Administrators only; nothing is changed or sent anywhere. */
 final class AdminPage {
     private const SLUG = 'modulix-check';
@@ -16,10 +18,14 @@ final class AdminPage {
         if (!current_user_can('manage_options')) {
             return;
         }
-        echo '<div class="wrap"><h1>Modulix readiness check</h1>';
-        echo '<p>Lists the Elementor Pro widgets, dynamic tags, template types and features your pages and templates use '
+        echo '<div class="wrap"><h1>' . esc_html('Modulix readiness check') . '</h1>';
+        echo '<p>' . esc_html('Lists the Elementor Pro widgets, dynamic tags, template types and features your pages and templates use '
             . 'that Modulix does not cover yet, and the themes and plugins that call Elementor Pro. Nothing is changed '
-            . 'and nothing leaves this site.</p>';
+            . 'and nothing leaves this site.') . '</p>';
+        if (\Modulix\Mcp\Bootstrap::preview()) {
+            AdminSettings::render();
+        }
+        echo '<hr><h2>' . esc_html('Readiness check') . '</h2>';
         echo '<form method="post">';
         wp_nonce_field(self::NONCE);
         submit_button('Run the check', 'primary', 'modulix_run', false);
@@ -39,9 +45,9 @@ final class AdminPage {
             }
         })();
         $missing = Scanner::forModulix()->missing($docs);
-        echo '<h2>Pages and templates</h2>';
+        echo '<h2>' . esc_html('Pages and templates') . '</h2>';
         echo Report::html($missing, $titles, static fn(int $id): string => (string) get_edit_post_link($id, 'raw'));
-        echo '<h2>Themes and plugins</h2>';
+        echo '<h2>' . esc_html('Themes and plugins') . '</h2>';
         echo Report::ecosystemHtml(WpSource::ecosystem());
     }
 }

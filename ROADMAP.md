@@ -18,6 +18,17 @@ display conditions; theme widgets (site logo and title, page and post title, pos
 archive title); Posts, Portfolio, Archive Posts; Nav Menu; Template; Gallery; Floating Buttons; Sticky; Motion
 Effects; Custom CSS; dynamic tags incl. ACF; no upsells in the editor and admin.
 
+## Done and tested (0.7.0-beta.1 and 0.7.0-beta.2)
+
+Tested against Elementor Pro 4.0.4 on a test site (frontend at desktop and mobile width, and the editor):
+F1-F5 (0.7.0-beta.1); F7 (Elementor Pro's editor scripts); T3; L1; L2; L4; L5; W1-W18.
+
+## Included in 0.7.0-beta.2, end-to-end tests pending
+
+The code is in the release and reviewed; the step closes once it is tested end to end on a test site:
+S1-S5, T4, T5, L3 (Loop Carousel), FO1-FO5, P1, P2, WC1-WC4. Help with testing is welcome: report what you find in
+the step's issue.
+
 ## Milestone 0 - Foundation (0.7)
 
 Makes the rest possible for more people: a check that tells a site owner whether they can switch, support for plugins

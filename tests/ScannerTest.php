@@ -29,8 +29,8 @@ final class ScannerTest extends TestCase {
         $this->assertSame([], (new Scanner(self::PRO, self::COVERED))->missing($docs));
     }
 
-    public function test_real_lists_flag_form_and_not_posts(): void {
+    public function test_real_lists_include_form_and_posts(): void {
         $docs = [new Document(5, 'Contact', 'wp-page', [self::widget('form'), self::widget('posts')], [])];
-        $this->assertSame(['widget:form' => [5]], Scanner::forModulix()->missing($docs));
+        $this->assertSame([], Scanner::forModulix()->missing($docs));
     }
 }
