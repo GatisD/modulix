@@ -18,16 +18,16 @@ display conditions; theme widgets (site logo and title, page and post title, pos
 archive title); Posts, Portfolio, Archive Posts; Nav Menu; Template; Gallery; Floating Buttons; Sticky; Motion
 Effects; Custom CSS; dynamic tags incl. ACF; no upsells in the editor and admin.
 
-## Done and tested (0.7.0-beta.1 and 0.7.0-beta.2)
+## Done and tested (0.7.0)
 
-Tested against Elementor Pro 4.0.4 on a test site (frontend at desktop and mobile width, and the editor):
-F1-F5 (0.7.0-beta.1); F7 (Elementor Pro's editor scripts); T3; L1; L2; L4; L5; W1-W18.
+Tested against Elementor Pro 4.0.4 on a test site (frontend at desktop and mobile width, the editor, and end to end in
+a browser and on the server): F1-F5, F7, F8; S1; T3, T5; L1-L5; FO1, FO4, FO5; P1; W1-W18; WC1, WC3.
 
-## Included in 0.7.0-beta.2, end-to-end tests pending
+## Included in 0.7.0, end-to-end tests pending
 
 The code is in the release and reviewed; the step closes once it is tested end to end on a test site:
-S1-S5, T4, T5, L3 (Loop Carousel), FO1-FO5, P1, P2, WC1-WC4. Help with testing is welcome: report what you find in
-the step's issue.
+S2-S5, T4, FO2 (admin page and export), FO3, P2, WC2, WC4. Help with testing is welcome: report what you find in the
+step's issue.
 
 ## Milestone 0 - Foundation (0.7)
 
@@ -56,7 +56,7 @@ and themes that look for Elementor Pro, and the tooling contributors need.
 | [S4](../../issues/13) | **Role Manager, Element Manager** | S | - | - |
 | [S5](../../issues/14) | **Page Transitions, Scroll Snap** | M | - | good first issue |
 
-## Milestone 2 - Theme Builder complete (0.8)
+## Milestone 2 - Theme Builder complete (1.0)
 
 | Step | What | Size | Depends on | Label |
 |---|---|---|---|---|
@@ -67,7 +67,7 @@ and themes that look for Elementor Pro, and the tooling contributors need.
 | [T5](../../issues/19) | **Global Widget**: existing global widgets keep rendering and can be edited | S | - | - |
 | [T6](../../issues/20) | **Remaining dynamic tags** (request parameter, shortcode, user info, internal URL, lightbox, reload page and others) | M | - | needs-maintainer |
 
-## Milestone 3 - Loops and carousels (0.9)
+## Milestone 3 - Loops and carousels (1.0)
 
 | Step | What | Size | Depends on | Label |
 |---|---|---|---|---|
@@ -77,7 +77,7 @@ and themes that look for Elementor Pro, and the tooling contributors need.
 | [L4](../../issues/24) | **Nested Carousel** | S | - | good first issue |
 | [L5](../../issues/25) | **Slides** | M | - | good first issue |
 
-## Milestone 4 - Forms (0.10)
+## Milestone 4 - Forms (1.0)
 
 | Step | What | Size | Depends on | Label |
 |---|---|---|---|---|
@@ -87,7 +87,7 @@ and themes that look for Elementor Pro, and the tooling contributors need.
 | [FO4](../../issues/29) | **Login widget** | S | FO1 | needs-maintainer |
 | [FO5](../../issues/30) | **File upload field** | S | FO1 | needs-maintainer |
 
-## Milestone 5 - Popups (0.11)
+## Milestone 5 - Popups (1.0)
 
 | Step | What | Size | Depends on | Label |
 |---|---|---|---|---|
@@ -148,6 +148,10 @@ Themes and plugins that check for Elementor Pro are tested with Modulix, and the
 | [X11](../../issues/65) | Advanced AJAX Product Filters |
 
 ## Version 1.0
+
+The code for Milestones 2-7 already ships in 0.7.0-beta.2, so there are no separate 0.8-0.11 releases: 0.7.0 is the
+stable release of what is tested end to end, and the next stable release is 1.0.0.
+
 
 Milestones 0-7 are done, the readiness check covers every supported feature, and the ecosystem list has a result for
 each entry.

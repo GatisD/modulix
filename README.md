@@ -7,7 +7,7 @@ conditions. No licence key, no upsells in the editor.
 Modulix is built from Elementor Pro's own GPL code (see [How it is built](#how-it-is-built)), so it renders the
 same markup as Pro. It runs in production since October 2026.
 
-## What works today (0.7.0-beta.2; latest stable release 0.6.0)
+## What works today (0.7.0)
 
 | Area | Included |
 |---|---|
@@ -27,12 +27,15 @@ same markup as Pro. It runs in production since October 2026.
 | Dynamic tags | Post, archive, site, author, comments and date tags, Contact URL, ACF fields (text, image, URL, color, number, file, date) |
 | Switching (from 0.7.0-beta.1) | Readiness check next to an active Elementor Pro (Tools -> Modulix, `wp modulix check`); themes and plugins that call Elementor Pro classes get the matching Modulix classes |
 
-Tested in 0.7.0-beta.2 against Elementor Pro 4.0.4 on a test site, page by page at desktop and mobile width and in
-the editor: every widget in the Widgets row except Global Widget, the theme widgets, Loop Item,
-Loop Grid, Taxonomy Filter and 21 real site pages; the output matches Pro. Included from Pro's code and reviewed, but
-not yet tested end to end: Global Widget, Loop Carousel, form submissions, form integrations and file uploads,
-WooCommerce cart, checkout and account pages, popup triggers and Custom Code. Test those on a staging copy before you
-rely on them, and report problems as issues. 0.7.0 follows once they are tested.
+Tested against Elementor Pro 4.0.4 on a test site, page by page at desktop and mobile width and in the editor: every
+widget in the Widgets row, the theme widgets, Loop Item, Loop Grid, Taxonomy Filter and 21 real site pages; the output
+matches Pro. Tested end to end in a browser and on the server: form submissions with email actions, stored
+submissions, validation and spam protection, file uploads (allowed and rejected types), the Login widget, popups
+(page-load and click triggers, conditions, closing), Custom Code (head, body start, body end, conditions), Global
+Widget, Loop Carousel and WooCommerce (single product template, add to cart, Menu Cart, Cart, Checkout, a cash on
+delivery order, My Account). Not yet tested end to end: form integrations with outside services, the submissions
+admin page and export, popup form actions, WooCommerce archive templates and kit settings, display conditions on
+elements, Custom Fonts and Custom Icons, Role Manager, page transitions and scroll snap; report problems as issues.
 
 Next: the full Theme Builder app with its conditions editor, the remaining dynamic tags, then Modulix MCP. The
 step-by-step plan is in [ROADMAP.md](ROADMAP.md).

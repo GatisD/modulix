@@ -4,14 +4,14 @@
  * Plugin URI: https://github.com/GatisD/modulix
  * Description: Open-source replacement for Elementor Pro features: Theme Builder (header, footer, single, archive, search, 404), Posts, Archive Posts, Portfolio, theme widgets, Gallery, Template, dynamic tags incl. ACF, Motion Effects, Sticky, Nav Menu, Floating Buttons, Custom CSS, and a readiness check to run before switching. Contains code derived from Elementor Pro (GPLv3), modified - see NOTICE.md.
  * Author: Gatis Daugavietis
- * Version: 0.7.0-beta.2
+ * Version: 0.7.0
  * Requires PHP: 8.1
  * Requires Plugins: elementor
  * License: GPL-3.0-or-later
  */
 defined('ABSPATH') || exit;
 
-define('MODULIX_VERSION', '0.7.0-beta.2');
+define('MODULIX_VERSION', '0.7.0');
 define('MODULIX_PATH', plugin_dir_path(__FILE__));
 define('MODULIX_MODULES_PATH', MODULIX_PATH . 'modules/');
 define('MODULIX_URL', plugins_url('/', __FILE__));
