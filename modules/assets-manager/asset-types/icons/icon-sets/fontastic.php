@@ -16,7 +16,8 @@ class Fontastic extends Icon_Set_Base {
 	protected $data_file = 'icons-reference.html';
 	protected $stylesheet_file = 'styles.css';
 	protected $allowed_zipped_files = [ 'icons-reference.html', 'styles.css', 'fonts/' ];
-	protected $allowed_webfont_extensions = [ 'woff', 'ttf', 'svg', 'eot' ];
+	protected $files_to_save = [ 'styles.css' ];
+	protected $allowed_webfont_extensions = [ 'woff', 'ttf', 'eot' ];
 
 	protected function prepare() {
 		$this->data = Utils::_unstable_file_get_contents( $this->directory . $this->stylesheet_file );

@@ -19,6 +19,7 @@ use Modulix\Modules\CustomCode\ImportExportCustomization\Import_Export_Customiza
 use Modulix\Modules\ThemeBuilder\Classes\Conditions_Manager;
 use Modulix\Modules\ThemeBuilder\Classes\Locations_Manager;
 use Modulix\Plugin;
+use Modulix\Security\PostTypeCapabilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -182,17 +183,8 @@ class Module extends Module_Base {
 			'capability_type' => 'post',
 			'hierarchical' => false,
 			'supports' => [ 'title', 'author', 'custom-fields' ],
-			'capabilities' => [
-				'publish_posts' => 'manage_options',
-				'edit_posts' => 'manage_options',
-				'edit_others_posts' => 'manage_options',
-				'delete_posts' => 'manage_options',
-				'delete_others_posts' => 'manage_options',
-				'read_private_posts' => 'manage_options',
-				'edit_post' => 'manage_options',
-				'delete_post' => 'manage_options',
-				'read_post' => 'manage_options',
-			],
+			'capabilities' => PostTypeCapabilities::restricted( self::CPT, self::CAPABILITY ),
+			'map_meta_cap' => true,
 		] );
 
 		// Handling custom post type messages.
@@ -335,6 +327,7 @@ class Module extends Module_Base {
 				],
 				MODULIX_VERSION
 			);
+			\Modulix\I18n::setScriptTranslations( 'custom-code-metabox' );
 
 			$post = [
 				'ID' => $post_id,

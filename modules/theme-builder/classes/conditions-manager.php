@@ -3,8 +3,10 @@ namespace Modulix\Modules\ThemeBuilder\Classes;
 // Modulix: derived from Elementor Pro 4.0.4, modules/theme-builder/classes/conditions-manager.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): ?theme_template_id preview parameter honoured only for users who can edit the template.
-// Modified by Modulix (2026-10-23): editor AJAX actions removed (conditions are edited through save_conditions(), Site Bridge or a later admin screen).
+// Modified by Modulix (2026-10-25): editor conditions AJAX actions restored with the lifted Theme Builder editor flow.
 
+use Elementor\Core\Common\Modules\Ajax\Module as Ajax;
+use Elementor\Core\Utils\Exceptions;
 use Elementor\Plugin;
 use Elementor\TemplateLibrary\Source_Local;
 use Modulix\Core\Utils;
@@ -37,6 +39,7 @@ class Conditions_Manager {
 		add_action( 'wp_loaded', [ $this, 'register_conditions' ] ); // After Plugins Registered CPT.
 		add_action( 'wp_trash_post', [ $this, 'purge_post_from_cache' ] );
 		add_action( 'untrashed_post', [ $this, 'on_untrash_post' ] );
+		add_action( 'elementor/ajax/register_actions', [ $this, 'register_ajax_actions' ] );
 
 		add_action( 'manage_' . Source_Local::CPT . '_posts_columns', [ $this, 'admin_columns_headers' ] );
 		add_action( 'manage_' . Source_Local::CPT . '_posts_custom_column', [ $this, 'admin_columns_content' ], 10, 2 );
@@ -82,6 +85,41 @@ class Conditions_Manager {
 		} else {
 			echo esc_html__( 'None', 'modulix' );
 		}
+	}
+
+	/**
+	 * @param Ajax $ajax_manager
+	 */
+	public function register_ajax_actions( $ajax_manager ) {
+		$ajax_manager->register_ajax_action( 'pro_theme_builder_save_conditions', [ $this, 'ajax_save_theme_template_conditions' ] );
+		$ajax_manager->register_ajax_action( 'pro_theme_builder_conditions_check_conflicts', [ $this, 'ajax_check_conditions_conflicts' ] );
+	}
+
+	/**
+	 * @throws \Exception
+	 */
+	public function ajax_check_conditions_conflicts( $request ) {
+		$document = Utils::_unstable_get_document_for_edit( $request['editor_post_id'] );
+		$condition = $request['condition'];
+		unset( $condition['_id'] );
+		$condition = rtrim( implode( '/', $condition ), '/' );
+
+		$conflicted = array_map(
+			static function ( $conflict ) {
+				return sprintf( '<a href="%s" target="_blank">%s</a>', $conflict['edit_url'], $conflict['template_title'] );
+			},
+			$this->get_conditions_conflicts( $document->get_main_id(), $condition )
+		);
+
+		if ( empty( $conflicted ) ) {
+			return '';
+		}
+
+		return sprintf(
+			/* translators: %s: a list of conflicted templates */
+			esc_html__( 'We noticed that you already applied %s with the same condition.', 'modulix' ),
+			implode( ', ', $conflicted )
+		) . '<br />' . esc_html__( "To continue, set different conditions for each so they don't conflict.", 'modulix' );
 	}
 
 	public function get_conditions_conflicts_by_location( $condition, $location, $ignore_post_id = null ) {
@@ -138,6 +176,22 @@ class Conditions_Manager {
 		$document = $theme_builder_module->get_document( $post_id );
 
 		return $this->get_conditions_conflicts_by_location( $condition, $document->get_location(), $post_id );
+	}
+
+	/**
+	 * @throws \Exception
+	 */
+	public function ajax_save_theme_template_conditions( $request ) {
+		$document = Utils::_unstable_get_document_for_edit( $request['editor_post_id'] );
+
+		if ( ! isset( $request['conditions'] ) ) {
+			$request['conditions'] = [];
+		}
+
+		$is_saved = $this->save_conditions( $document->get_main_id(), $request['conditions'] );
+		if ( ! $is_saved ) {
+			throw new \Exception( 'Error while saving conditions.', Exceptions::INTERNAL_SERVER_ERROR );
+		}
 	}
 
 	private function register_condition( $id, $args = [] ) {

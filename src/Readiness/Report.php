@@ -11,11 +11,15 @@ final class Report {
         'document:product-archive' => 'WooCommerce product archive templates',
         'document:widget' => 'Global widgets',
         'feature:attributes' => 'Custom attributes on elements',
+        'feature:atomic_custom_css' => 'Atomic Custom CSS',
+        'feature:atomic_display_conditions' => 'Atomic Display Conditions',
         'feature:display_conditions' => 'Display conditions on elements',
+        'feature:interactions' => 'Pro interactions',
         'feature:page_transitions' => 'Page transitions',
         'feature:scroll_snap' => 'Scroll snap',
     ];
-    private const KINDS = ['widget' => 'Widget', 'tag' => 'Dynamic tag', 'document' => 'Template type', 'feature' => 'Feature'];
+    private const KINDS = ['widget' => 'Widget', 'tag' => 'Dynamic tag', 'document' => 'Template type',
+                           'location' => 'Theme location', 'feature' => 'Feature'];
 
     public static function label(string $item): string {
         if (isset(self::LABELS[$item])) {

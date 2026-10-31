@@ -7,6 +7,9 @@ final class ReportTest extends TestCase {
         $this->assertSame('Custom Code snippets', Report::label('document:code_snippet'));
         $this->assertSame('Widget "form"', Report::label('widget:form'));
         $this->assertSame('Dynamic tag "popup"', Report::label('tag:popup'));
+        $this->assertSame('Theme location "floating_buttons"', Report::label('location:floating_buttons'));
+        $this->assertSame('Atomic Custom CSS', Report::label('feature:atomic_custom_css'));
+        $this->assertSame('Pro interactions', Report::label('feature:interactions'));
     }
 
     public function test_rows_cut_long_id_lists(): void {

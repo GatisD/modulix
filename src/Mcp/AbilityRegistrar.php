@@ -8,7 +8,7 @@ final class AbilityRegistrar {
         }
         wp_register_ability_category('modulix', [
             'label' => 'Modulix',
-            'description' => 'Read-only Elementor site and document abilities from Modulix.',
+            'description' => 'Elementor site and document abilities from Modulix.',
         ]);
     }
 
@@ -18,18 +18,41 @@ final class AbilityRegistrar {
         }
         $access = new WordPressAccessGate();
         $schemas = new ElementorSchemaRegistry();
-        $catalog = new AbilityCatalog(
+        $limits = new RequestLimits(new WordPressTransientStore(), new SystemClock());
+        $readCatalog = new AbilityCatalog(
             new WordPressReadSource($access),
             $access,
-            new RequestLimits(new WordPressTransientStore(), new SystemClock()),
+            $limits,
             $schemas
         );
-        foreach (self::select($catalog->definitions(), $enabled) as $name => $definition) {
+        $writeCatalog = new WriteAbilityCatalog(
+            new WordPressWriteSource(),
+            $access,
+            $limits,
+            new ElementTreeValidator($schemas, new WordPressHtmlSanitizer()),
+            ChangeLog::wordpress()
+        );
+        $definitions = array_merge($readCatalog->definitions(), $writeCatalog->definitions());
+        if (self::previewEnabled()) {
+            $m4Catalog = new M4AbilityCatalog(
+                new WordPressM4Source(),
+                $access,
+                $limits,
+                new ElementTreeValidator($schemas, new WordPressHtmlSanitizer()),
+                ChangeLog::wordpress()
+            );
+            $definitions = array_merge($definitions, $m4Catalog->definitions());
+        }
+        foreach (self::select($definitions, $enabled) as $name => $definition) {
             wp_register_ability($name, $definition);
         }
     }
 
     public static function select(array $definitions, array $enabled): array {
         return array_intersect_key($definitions, array_fill_keys($enabled, true));
+    }
+
+    public static function previewEnabled(?bool $override = null): bool {
+        return $override ?? (defined('MODULIX_MCP_PREVIEW') && MODULIX_MCP_PREVIEW === true);
     }
 }

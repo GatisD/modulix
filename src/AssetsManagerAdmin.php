@@ -28,5 +28,6 @@ final class AssetsManagerAdmin {
             MODULIX_VERSION,
             true
         );
+        I18n::setScriptTranslations('modulix-admin-assets');
     }
 }

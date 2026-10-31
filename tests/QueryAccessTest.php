@@ -27,4 +27,25 @@ final class QueryAccessTest extends TestCase {
         $this->assertSame('Gatis (g@x.test)', QueryAccess::user_display_text($user, 'detailed', true));
         $this->assertSame('Gatis', QueryAccess::user_display_text($user, 'detailed', false));
     }
+
+    public function test_public_taxonomy_is_available_without_private_capabilities(): void {
+        $taxonomy = (object) ['name' => 'category'];
+
+        $this->assertTrue(QueryAccess::taxonomy_allowed($taxonomy, true, false, false));
+    }
+
+    public function test_private_taxonomy_is_hidden_from_contributors_and_authors(): void {
+        $taxonomy = (object) ['name' => 'private_topics'];
+
+        $this->assertFalse(QueryAccess::taxonomy_allowed($taxonomy, false, false, false), 'Contributor must not see private terms.');
+        $this->assertFalse(QueryAccess::taxonomy_allowed($taxonomy, false, false, false), 'Author must not see private terms.');
+    }
+
+    public function test_private_taxonomy_is_available_with_its_own_capability(): void {
+        $taxonomy = (object) ['name' => 'private_topics'];
+
+        $this->assertTrue(QueryAccess::taxonomy_allowed($taxonomy, false, true, false));
+        $this->assertTrue(QueryAccess::taxonomy_allowed($taxonomy, false, false, true));
+        $this->assertFalse(QueryAccess::taxonomy_allowed(null, true, true, true));
+    }
 }

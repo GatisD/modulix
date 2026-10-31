@@ -67,7 +67,7 @@ final class Editor implements ModuleInterface {
 
         $script = self::scriptDefinitions(self::mode(), MODULIX_ASSETS_URL, MODULIX_VERSION)[self::PRO_HANDLE];
         wp_enqueue_script(self::PRO_HANDLE, $script['src'], $script['dependencies'], $script['version'], true);
-        wp_set_script_translations(self::PRO_HANDLE, 'elementor-pro');
+        I18n::setScriptTranslations(self::PRO_HANDLE);
         \Elementor\Utils::print_js_config(
             self::PRO_HANDLE,
             'elementorProEditorConfig',
@@ -82,6 +82,7 @@ final class Editor implements ModuleInterface {
 
         $script = self::scriptDefinitions(self::mode(), MODULIX_ASSETS_URL, MODULIX_VERSION)[self::HANDLE];
         wp_enqueue_script(self::HANDLE, $script['src'], $script['dependencies'], $script['version'], true);
+        I18n::setScriptTranslations(self::HANDLE);
     }
 
     /**

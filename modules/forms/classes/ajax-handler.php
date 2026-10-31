@@ -6,6 +6,8 @@ namespace Modulix\Modules\Forms\Classes;
 use Modulix\Core\Utils;
 use Modulix\Modules\Forms\Module;
 use Modulix\Plugin;
+use Modulix\Security\PublicDocumentAccess;
+use Modulix\Security\PublicRequestBudget;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -63,13 +65,27 @@ class Ajax_Handler {
 	public function ajax_send_form() {
 		$post_data = $_POST; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		// $post_id that holds the form settings.
-		$post_id = $post_data['post_id'];
+		$post_id = isset( $post_data['post_id'] ) ? (int) $post_data['post_id'] : 0;
+
+		if ( $post_id < 1 || ! $this->request_budget_allows( $post_id ) ) {
+			$this
+				->add_error_message( self::get_default_message( self::INVALID_FORM, [] ) )
+				->send();
+		}
 
 		// $queried_id the post for dynamic values data.
 		if ( isset( $post_data['queried_id'] ) ) {
 			$queried_id = $post_data['queried_id'];
 		} else {
 			$queried_id = $post_id;
+		}
+		$queried_ids = PublicDocumentAccess::normalizeIds( [ $queried_id ], 1 );
+		$queried_id = $queried_ids[0] ?? 0;
+		$queried_post = $queried_id ? get_post( $queried_id ) : null;
+		if ( ! PublicDocumentAccess::allowed( $queried_post, current_user_can( 'edit_post', $queried_id ) ) ) {
+			$this
+				->add_error_message( self::get_default_message( self::INVALID_FORM, [] ) )
+				->send();
 		}
 
 		// Make the post as global post for dynamic values.
@@ -78,6 +94,12 @@ class Ajax_Handler {
 		$form_id = $post_data['form_id'];
 
 		$elementor = Plugin::elementor();
+		$source_post = get_post( $post_id );
+		if ( ! PublicDocumentAccess::allowed( $source_post, current_user_can( 'edit_post', $post_id ) ) ) {
+			$this
+				->add_error_message( self::get_default_message( self::INVALID_FORM, [] ) )
+				->send();
+		}
 		$document = $elementor->documents->get( $post_id );
 		$form = null;
 		$template_id = null;
@@ -87,6 +109,13 @@ class Ajax_Handler {
 		}
 
 		if ( ! empty( $form['templateID'] ) ) {
+			$template_post = get_post( $form['templateID'] );
+			if ( ! PublicDocumentAccess::allowed( $template_post, current_user_can( 'edit_post', $form['templateID'] ) ) ) {
+				$this
+					->add_error_message( self::get_default_message( self::INVALID_FORM, [] ) )
+					->send();
+			}
+
 			$template = Plugin::elementor()->documents->get( $form['templateID'] );
 
 			if ( ! $template ) {
@@ -211,6 +240,25 @@ class Ajax_Handler {
 		do_action( 'elementor_pro/forms/new_record', $record, $this );
 
 		$this->send();
+	}
+
+	private function request_budget_allows( $post_id ) {
+		$limit = (int) apply_filters( 'modulix/forms/submission_rate_limit', 20, $post_id );
+		$window = (int) apply_filters( 'modulix/forms/submission_rate_window', 60, $post_id );
+		$address = isset( $_SERVER['REMOTE_ADDR'] ) && is_string( $_SERVER['REMOTE_ADDR'] )
+			? $_SERVER['REMOTE_ADDR']
+			: 'unknown';
+		$key = 'modulix_form_budget_' . hash_hmac( 'sha256', $address, wp_salt( 'nonce' ) );
+		$stored = get_transient( $key );
+		$state = is_array( $stored ) ? $stored : null;
+		[ $allowed, $next ] = PublicRequestBudget::consume( $state, time(), $limit, $window );
+		set_transient( $key, $next, max( 1, $window ) );
+
+		if ( ! $allowed ) {
+			return false;
+		}
+
+		return (bool) apply_filters( 'modulix/forms/submission_allowed', true, $post_id, $next );
 	}
 
 	public function add_success_message( $message ) {

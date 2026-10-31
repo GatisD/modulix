@@ -4,7 +4,8 @@ namespace Modulix\Modules\DynamicTags;
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
 // Modified by Modulix (2026-10-23): licence checks, ACF/Toolset/Pods, author meta filter and WooCommerce redirect removed; tags limited to Site_Logo and Site_URL.
 // Modified by Modulix (2026-10-23, plan 6a): Contact_URL added (builds links from tag settings only; fleet uses it in icon lists).
-// Modified by Modulix (2026-10-23, plan 5): post, archive, site, author, comments and date tags, Post_Custom_Field, the author meta save filter and the ACF component (active with ACF, no licence gate) restored. Not restored yet: Internal_URL, Reload_Page, Request_Parameter, Lightbox, Shortcode, User_Info, User_Profile_Picture (input-reflecting or action tags, after a security review); Toolset, Pods.
+// Modified by Modulix (2026-10-23, plan 5): post, archive, site, author, comments and date tags, Post_Custom_Field, the author meta save filter and the ACF component (active with ACF, no licence gate) restored. Toolset and Pods remain removed.
+// Modified by Modulix (2026-10-24): internal URL, action, request, shortcode and current-user tags restored with output and access boundaries.
 
 use Elementor\Modules\DynamicTags\Module as TagsModule;
 use Modulix\Modules\DynamicTags\ACF;
@@ -75,10 +76,17 @@ class Module extends TagsModule {
 			'Site_Tagline',
 			'Site_Title',
 			'Site_URL',
+			'Internal_URL',
 			'Current_Date_Time',
+			'Reload_Page',
+			'Request_Parameter',
+			'Lightbox',
 			'Featured_Image_Data',
+			'Shortcode',
 			'Post_Custom_Field',
 			'Contact_URL',
+			'User_Info',
+			'User_Profile_Picture',
 		];
 	}
 

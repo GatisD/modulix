@@ -14,12 +14,14 @@ class Fontello extends Icon_Set_Base {
 
 	protected $data_file = 'config.json';
 	protected $stylesheet_file = '';
-	protected $allowed_zipped_files = [ 'config.json', 'demo.html', 'README.txt', 'LICENSE.txt', 'css/', 'font/' ];
-	protected $allowed_webfont_extensions = [ 'woff', 'woff2', 'ttf', 'svg', 'otf' ];
+	protected $allowed_zipped_files = [ 'config.json', 'css/', 'font/' ];
+	protected $allowed_webfont_extensions = [ 'woff', 'woff2', 'ttf', 'otf' ];
 
 	protected function prepare() {
 		$name = IconPackageName::validate( (string) $this->get_name() );
 		$this->remove_fontello_styling( $name );
+		$this->stylesheet_file = 'css/' . $name . '.css';
+		$this->files_to_save = [ $this->stylesheet_file ];
 		$this->dir_name = $this->get_unique_name( $name );
 	}
 

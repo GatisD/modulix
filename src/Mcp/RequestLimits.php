@@ -24,6 +24,16 @@ final class RequestLimits implements RequestGate {
         return $this->checkRequestSize($encoded) ?? $this->checkRate($userId, false);
     }
 
+    public function checkWrite(int $userId, array $input, int $batchSize): ?string {
+        $encoded = json_encode($input);
+        if ($encoded === false) {
+            return 'invalid_request';
+        }
+        return $this->checkRequestSize($encoded)
+            ?? ($batchSize > $this->maxBatchElements ? 'batch_too_large' : null)
+            ?? $this->checkRate($userId, true);
+    }
+
     public function checkRate(int $userId, bool $write): ?string {
         $limit = $write ? $this->writesPerMinute : $this->readsPerMinute;
         $window = intdiv($this->clock->now(), 60);

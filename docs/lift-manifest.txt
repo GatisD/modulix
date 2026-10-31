@@ -562,3 +562,34 @@ assets/css/editor*.css
 # removed: modules/assets-manager/asset-types/admin-menu-items/custom-icons-promotion-menu-item.php (unlicensed Custom Icons promotion menu; licensed menu is registered directly)
 # removed: modules/assets-manager/asset-types/editor-one-menu-items/editor-one-fonts-promotion.php (unlicensed Custom Fonts promotion menu; licensed menu is registered directly)
 # removed: modules/assets-manager/asset-types/editor-one-menu-items/editor-one-icons-promotion.php (unlicensed Custom Icons promotion menu; licensed menu is registered directly)
+
+# Roadmap T2: visual Theme Builder app and local data routes (2026-10-24)
+core/app/app.php
+core/app/modules/site-editor/**/*.php
+modules/theme-builder/assets/images/conditions-tab.svg
+
+# Roadmap T6: remaining dynamic tags and template shortcode (2026-10-24)
+modules/dynamic-tags/tags/request-parameter.php
+modules/dynamic-tags/tags/shortcode.php
+modules/dynamic-tags/tags/user-info.php
+modules/dynamic-tags/tags/user-profile-picture.php
+modules/dynamic-tags/tags/internal-url.php
+modules/dynamic-tags/tags/lightbox.php
+modules/dynamic-tags/tags/reload-page.php
+modules/library/classes/shortcode.php
+
+# Roadmap T4: element Display Conditions runtime and editor control (2026-10-24)
+modules/display-conditions/**/*.php
+core/admin/post-status.php
+# generated: assets/js/display-conditions.js (tools/display-conditions-bundle.py)
+# generated: assets/js/display-conditions.min.js (tools/display-conditions-bundle.py)
+
+# A1 submissions export runtime chunk (2026-10-24)
+assets/js/jszip.vendor.4627e880b5d487f49e7a.bundle.js
+assets/js/jszip.vendor.ee0ba61191fa34e6bbe2.bundle.min.js
+assets/js/jszip.vendor.ee0ba61191fa34e6bbe2.bundle.min.js.LICENSE.txt
+
+# tF1 review: Theme Builder conditions editor runtime (2026-10-24)
+modules/theme-builder/classes/conditions-repeater.php
+modules/theme-builder/classes/template-conditions.php
+modules/theme-builder/views/panel-template.php

@@ -141,6 +141,40 @@ class Module extends Module_Base {
 		return 'query-control';
 	}
 
+	public static function get_viewable_taxonomy_names(): array {
+		$names = [];
+		foreach ( get_taxonomies( [], 'objects' ) as $taxonomy ) {
+			if ( is_taxonomy_viewable( $taxonomy ) ) {
+				$names[] = $taxonomy->name;
+			}
+		}
+
+		return $names;
+	}
+
+	private static function user_can_access_taxonomy( string $taxonomy_name ): bool {
+		$taxonomy = get_taxonomy( $taxonomy_name );
+		if ( ! $taxonomy ) {
+			return false;
+		}
+
+		$assign_capability = $taxonomy->cap->assign_terms ?? '';
+		$manage_capability = $taxonomy->cap->manage_terms ?? '';
+
+		return QueryAccess::taxonomy_allowed(
+			$taxonomy,
+			is_taxonomy_viewable( $taxonomy ),
+			$assign_capability && current_user_can( $assign_capability ),
+			$manage_capability && current_user_can( $manage_capability )
+		);
+	}
+
+	private static function get_accessible_taxonomy_names( $taxonomy_names ): array {
+		$names = array_map( 'sanitize_key', (array) $taxonomy_names );
+
+		return array_values( array_filter( array_unique( $names ), [ self::class, 'user_can_access_taxonomy' ] ) );
+	}
+
 	private function search_taxonomies( $query_params, $query_data, $data ) {
 		$by_field = $query_data['query']['by_field'];
 		$terms = get_terms( $query_params );
@@ -280,6 +314,13 @@ class Module extends Module_Base {
 		if ( empty( $query['taxonomy'] ) && ! empty( $query['post_type'] ) ) {
 			$query['taxonomy'] = get_object_taxonomies( $query['post_type'] );
 		}
+		if ( empty( $query['taxonomy'] ) ) {
+			$query['taxonomy'] = get_taxonomies( [], 'names' );
+		}
+		$query['taxonomy'] = self::get_accessible_taxonomy_names( $query['taxonomy'] );
+		if ( ! $query['taxonomy'] ) {
+			return new \WP_Error( self::AUTOCOMPLETE_ERROR_CODE, 'No accessible taxonomies' );
+		}
 		$query['search'] = $data['q'];
 		$query['hide_empty'] = false;
 		return $query;
@@ -346,9 +387,16 @@ class Module extends Module_Base {
 
 	private function get_titles_query_for_tax( $data ) {
 		$by_field = empty( $data['get_titles']['by_field'] ) ? 'term_taxonomy_id' : $data['get_titles']['by_field'];
+		$requested_taxonomies = $data['get_titles']['query']['taxonomy'] ?? get_taxonomies( [], 'names' );
+		$taxonomies = self::get_accessible_taxonomy_names( $requested_taxonomies );
+		if ( ! $taxonomies ) {
+			return new \WP_Error( self::GET_TITLES_ERROR_CODE, 'No accessible taxonomies' );
+		}
+
 		return [
 			$by_field => (array) $data['id'],
 			'hide_empty' => false,
+			'taxonomy' => $taxonomies,
 		];
 	}
 
@@ -546,6 +594,9 @@ class Module extends Module_Base {
 					break;
 				}
 				foreach ( $terms as $term ) {
+					if ( ! self::user_can_access_taxonomy( $term->taxonomy ) ) {
+						continue;
+					}
 					if ( apply_filters( "elementor/query/get_autocomplete/tax/{$display}", true, $term, $data ) ) {
 						$results[] = [
 							'id' => $term->{$by_field},
@@ -722,6 +773,9 @@ class Module extends Module_Base {
 					break;
 				}
 				foreach ( $terms as $term ) {
+					if ( ! self::user_can_access_taxonomy( $term->taxonomy ) ) {
+						continue;
+					}
 					if ( apply_filters( "elementor/query/get_value_titles/tax/{$display}", true, $term, $request ) ) {
 						$results[ $term->{$by_field} ] = $this->get_term_name( $term, $display, $request, 'get_value_titles' );
 					}

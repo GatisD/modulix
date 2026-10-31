@@ -2,7 +2,7 @@
 namespace Modulix\Modules\ThemeBuilder;
 // Modulix: derived from Elementor Pro 4.0.4, modules/theme-builder/module.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
-// Modified by Modulix (2026-10-23): front-end and template-list parts only. Removed: admin menus and Theme Builder app, editor panel template and conditions config, new-template dialog fields, promotion notice, finder item, import/export hooks, conditions repeater control. Widgets limited to Site_Logo.
+// Modified by Modulix (2026-10-23): front-end and template-list parts only. Removed: admin menus and Theme Builder app, new-template dialog fields, promotion notice, finder item, import/export hooks. Widgets limited to Site_Logo.
 // Modified by Modulix (2026-10-23, plan 5): theme-post/page/site/archive title widgets added; create_new_dialog_types restored (location labels, legacy Single hidden).
 // Modified by Modulix (2026-10-23, plan 6a): Archive_Posts added (the posts module is always present in Modulix).
 
@@ -107,6 +107,32 @@ class Module extends Module_Base {
 		return $document;
 	}
 
+	public function document_config( $config, $post_id ) {
+		$document = $this->get_document( $post_id );
+
+		if ( ! $document ) {
+			return $config;
+		}
+
+		$types_manager      = $this->get_types_manager();
+		$conditions_manager = $this->get_conditions_manager();
+		$template_type      = $this->get_template_type( $post_id );
+
+		return array_replace_recursive( $config, [
+			'theme_builder' => [
+				'types' => $types_manager->get_types_config(),
+				'conditions' => $conditions_manager->get_conditions_config(),
+				'template_conditions' => ( new Classes\Template_Conditions() )->get_config(),
+				'is_theme_template' => $this->is_theme_template( $post_id ),
+				'settings' => [
+					'template_type' => $template_type,
+					'location' => $document->get_location(),
+					'conditions' => $conditions_manager->get_document_conditions( $document ),
+				],
+			],
+		] );
+	}
+
 	public function create_new_dialog_types( $types ) {
 		/**
 		 * @var Theme_Document[] $document_types
@@ -128,6 +154,7 @@ class Module extends Module_Base {
 	}
 
 	public function register_controls( Controls_Manager $controls_manager ) {
+		$controls_manager->register( new Classes\Conditions_Repeater() );
 		$controls_manager->register( new Classes\Control_Media_Preview() );
 	}
 
@@ -164,6 +191,10 @@ class Module extends Module_Base {
 		return $document instanceof Theme_Document;
 	}
 
+	public function on_elementor_editor_init() {
+		Plugin::elementor()->common->add_template( __DIR__ . '/views/panel-template.php' );
+	}
+
 	/**
 	 * Add attributes to the document wrapper element.
 	 *
@@ -190,6 +221,8 @@ class Module extends Module_Base {
 		$this->add_component( 'locations', new Classes\Locations_Manager() );
 
 		add_action( 'elementor/controls/register', [ $this, 'register_controls' ] );
+		add_action( 'elementor/editor/init', [ $this, 'on_elementor_editor_init' ] );
+		add_filter( 'elementor/document/config', [ $this, 'document_config' ], 10, 2 );
 		add_filter( 'elementor/document/wrapper_attributes', [ $this, 'add_document_attributes' ], 10, 2 );
 
 		// Admin

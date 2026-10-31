@@ -1,13 +1,14 @@
 # Contributing to Modulix
 
-Thank you for helping. Modulix replaces Elementor Pro by lifting Pro's own GPL code instead of rewriting it, so sites
-built with Pro keep working: same widget names, same settings, same markup. Every contribution follows that rule.
+Thank you for helping. Modulix includes modified GPL-licensed code from Elementor Pro 4.0.4. It preserves stored
+Elementor names and formats for the features listed for each release. Contributions must keep those supported formats
+compatible and keep the corresponding tests accurate.
 
 ## Pick a step
 
 1. Open [ROADMAP.md](ROADMAP.md) and pick a step whose dependencies are done. Steps labelled `good first issue` are
    widgets without server endpoints.
-2. Comment on the step's issue so nobody else starts the same one. One step is one pull request.
+2. Comment on the step's issue so nobody else starts that step. One step is one pull request.
 3. A step labelled `needs-maintainer` touches endpoints, uploads, outgoing requests, capabilities or money. You can
    still work on it; a maintainer reviews those parts line by line before merging.
 
@@ -15,9 +16,9 @@ built with Pro keep working: same widget names, same settings, same markup. Ever
 
 - PHP 8.1 or newer, Composer, Python 3
 - A WordPress test site with Elementor (free) 3.34 or newer
-- For lifting: the Elementor Pro release Modulix is built from (4.0.4, see [docs/LIFTING.md](docs/LIFTING.md)). If you
-  do not have it, say so on the issue: a maintainer pushes the mechanical lift commit to a branch and you continue
-  from there.
+- For lifting: the upstream Elementor Pro release used for the modified code (4.0.4, see
+  [docs/LIFTING.md](docs/LIFTING.md)). If you do not have it, say so on the issue: a maintainer pushes the mechanical
+  lift commit to a branch and you continue from there.
 
 ```
 composer install
@@ -65,4 +66,4 @@ Do not open a public issue for a security problem. See [SECURITY.md](SECURITY.md
 
 ## Licence
 
-Contributions are licensed under GPL-3.0-or-later, the same as Modulix.
+Contributions are licensed under GPL-3.0-or-later, which is also Modulix's declared licence.

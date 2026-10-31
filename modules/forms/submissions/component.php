@@ -130,7 +130,7 @@ class Component extends Module_Base {
 			'before'
 		);
 
-		wp_set_script_translations( 'form-submission-admin', 'modulix' );
+		\Modulix\I18n::setScriptTranslations( 'form-submission-admin' );
 	}
 
 	private function scheduled_submissions_delete() {

@@ -14,8 +14,9 @@ class Icomoon extends Icon_Set_Base {
 
 	protected $data_file = 'selection.json';
 	protected $stylesheet_file = 'style.css';
-	protected $allowed_zipped_files = [ 'selection.json', 'demo.html', 'Read Mw.txt', 'demo-files/', 'fonts/' ];
-	protected $allowed_webfont_extensions = [ 'woff', 'ttf', 'svg', 'eot' ];
+	protected $allowed_zipped_files = [ 'selection.json', 'style.css', 'fonts/' ];
+	protected $files_to_save = [ 'style.css' ];
+	protected $allowed_webfont_extensions = [ 'woff', 'ttf', 'eot' ];
 
 	protected function prepare() {
 		$name = IconPackageName::validate( (string) $this->get_name() );

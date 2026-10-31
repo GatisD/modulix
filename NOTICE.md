@@ -1,8 +1,8 @@
 # Modulix - origin and modifications
 
-Modulix contains code derived from Elementor Pro, Copyright (C) 2016-2024 Elementor Ltd.,
-licensed under the GNU General Public License v3 or later. This is a modified version and is
-not the original program.
+Modulix includes modified GPL-licensed code from Elementor Pro 4.0.4, Copyright (C) 2016-2024
+Elementor Ltd. Original copyright and licence notices are retained. Changes are documented in
+the source and release notes. This is a modified version and is not the original program.
 
 Per the additional terms under GPL section 7 in Elementor Pro's license.txt:
 - We do not claim to have written the original program.
@@ -12,8 +12,10 @@ Per the additional terms under GPL section 7 in Elementor Pro's license.txt:
 Removed from derived code: licence checks, Elementor Connect, telemetry, upsells, cloud
 template library, AI features, update checks against Elementor servers.
 
-Modulix is not affiliated with or endorsed by Elementor Ltd. "Elementor" is a trademark of
-Elementor Ltd.; it is used here only to describe compatibility.
+This is an independent project. It is not affiliated with, endorsed by or sponsored by Elementor.
+References to Elementor and Elementor Pro identify upstream software and compatibility. Their
+product names and trademarks belong to their respective owners. The project does not include an
+Elementor subscription, official support or access to paid Elementor services.
 
 Upstream version used and how files are lifted: see docs/LIFTING.md.
 

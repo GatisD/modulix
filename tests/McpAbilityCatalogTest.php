@@ -49,7 +49,7 @@ final class McpAbilityCatalogTest extends TestCase {
         ]));
         $definitions = $catalog->definitions();
 
-        $this->assertSame('0.7.0', ($definitions['modulix/site-overview']['execute_callback'])(null)['modulix_version']);
+        $this->assertSame('1.0.0', ($definitions['modulix/site-overview']['execute_callback'])(null)['modulix_version']);
         $this->assertSame(42, ($definitions['modulix/get-document']['execute_callback'])(['post_id' => 42])['id']);
         $this->assertSame('heading', ($definitions['modulix/widget-schema']['execute_callback'])(['element_type' => 'heading'])['name']);
     }
@@ -80,7 +80,7 @@ final class McpAbilityCatalogTest extends TestCase {
 }
 
 final class FakeMcpReadSource implements ReadSource {
-    public function siteOverview(): array { return ['elementor_version' => '4.3.5', 'modulix_version' => '0.7.0', 'kit' => [], 'theme_templates' => []]; }
+    public function siteOverview(): array { return ['elementor_version' => '4.3.5', 'modulix_version' => '1.0.0', 'kit' => [], 'theme_templates' => []]; }
     public function listDocuments(int $page, int $perPage): array { return [['id' => 42, 'title' => 'Page', 'type' => 'page', 'status' => 'draft', 'modified' => '2026-10-24 12:00:00']]; }
     public function getDocument(int $id): ?array { return $id === 42 ? ['id' => 42, 'elements' => [], 'page_settings' => []] : null; }
 }
@@ -89,9 +89,12 @@ final class FakeMcpAccessGate implements AccessGate {
     public function __construct(private bool $site, private array $documents) {}
     public function canReadSite(): bool { return $this->site; }
     public function canReadDocument(int $postId): bool { return in_array($postId, $this->documents, true); }
+    public function canEditDocument(int $postId): bool { return in_array($postId, $this->documents, true); }
+    public function canCreateDocument(string $postType): bool { return $this->site; }
     public function userId(): int { return 7; }
 }
 
 final class AllowAllMcpRequestGate implements RequestGate {
     public function checkRead(int $userId, array $input): ?string { return null; }
+    public function checkWrite(int $userId, array $input, int $batchSize): ?string { return null; }
 }

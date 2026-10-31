@@ -2,7 +2,7 @@
 namespace Modulix\Mcp;
 
 final class LogTable {
-    private const SCHEMA_VERSION = '1';
+    private const SCHEMA_VERSION = '2';
     private const VERSION_OPTION = 'modulix_mcp_log_version';
 
     public static function schemaSql(string $prefix, string $charsetCollate): string {
@@ -12,6 +12,7 @@ final class LogTable {
             user_id bigint(20) unsigned NOT NULL,
             ability varchar(191) NOT NULL,
             document_id bigint(20) unsigned NOT NULL DEFAULT 0,
+            status varchar(16) NOT NULL DEFAULT 'done',
             revision_id bigint(20) unsigned NOT NULL DEFAULT 0,
             summary text NOT NULL,
             size bigint(20) unsigned NOT NULL DEFAULT 0,
@@ -39,6 +40,6 @@ final class LogTable {
     }
 
     private static function installedVersion(): string {
-        return defined('MODULIX_VERSION') ? (string) MODULIX_VERSION : self::SCHEMA_VERSION;
+        return self::SCHEMA_VERSION;
     }
 }

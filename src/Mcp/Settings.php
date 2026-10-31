@@ -9,6 +9,18 @@ final class Settings {
         'modulix/get-document',
         'modulix/widget-schema',
     ];
+    public const OPTIONAL_READ_ABILITIES = [
+        'modulix/preview-url',
+        'modulix/readiness',
+    ];
+    public const WRITE_ABILITIES = [
+        'modulix/create-document',
+        'modulix/update-elements',
+        'modulix/set-page-settings',
+        'modulix/set-conditions',
+        'modulix/update-kit',
+        'modulix/publish',
+    ];
 
     public static function defaults(): array {
         return [
@@ -38,7 +50,8 @@ final class Settings {
                     : (preg_replace('/[^a-z0-9_-]/', '', strtolower($part)) ?? '');
             }, $parts);
             $ability = implode('/', $parts);
-            if (in_array($ability, self::READ_ABILITIES, true) && !in_array($ability, $abilities, true)) {
+            if (in_array($ability, array_merge(self::READ_ABILITIES, self::OPTIONAL_READ_ABILITIES, self::WRITE_ABILITIES), true)
+                && !in_array($ability, $abilities, true)) {
                 $abilities[] = $ability;
             }
         }

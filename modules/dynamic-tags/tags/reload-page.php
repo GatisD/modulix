@@ -1,0 +1,42 @@
+<?php
+namespace Modulix\Modules\DynamicTags\Tags;
+// Modulix: derived from Elementor Pro 4.0.4, modules/dynamic-tags/tags/reload-page.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
+// Modified by Modulix (2026-10-24): namespace ElementorPro -> Modulix, text domain -> modulix.
+
+use Modulix\Modules\DynamicTags\Tags\Base\Pro_Tag;
+use Modulix\Modules\DynamicTags\Module;
+use Elementor\Controls_Manager;
+use Elementor\Embed;
+use Modulix\Plugin;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly
+}
+
+class Reload_Page extends Pro_Tag {
+
+	public function get_name() {
+		return 'reload-page';
+	}
+
+	public function get_title() {
+		return esc_html__( 'Reload Page', 'modulix' );
+	}
+
+	public function get_group() {
+		return Module::ACTION_GROUP;
+	}
+
+	public function get_categories() {
+		return [ Module::URL_CATEGORY ];
+	}
+
+	protected function register_advanced_section() {}
+
+	public function register_controls() {}
+
+	public function render() {
+		// PHPCS - the method Plugin::elementor()->frontend->create_action_hash is safe.
+		echo Plugin::elementor()->frontend->create_action_hash( 'reload-page' ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	}
+}

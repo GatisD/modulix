@@ -8,6 +8,7 @@ use Elementor\Core\Files\CSS\Base;
 use Modulix\Modules\AssetsManager\Classes;
 use Modulix\Modules\AssetsManager\AssetTypes\Fonts_Manager;
 use Modulix\Plugin;
+use Modulix\Security\CssString;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -244,7 +245,7 @@ class Custom_Fonts extends Classes\Font_Base {
 		$this->print_metabox( [ $repeater, $add_variable_font_button ] );
 
 		// PHPCS - Dedicated for CSS.
-		printf( '<style>%s</style>', get_post_meta( $post->ID, self::FONT_FACE_META_KEY, true ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		printf( '<style>%s</style>', $this->regenerate_font_face( $post->ID ) ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	public function save_meta( $post_id, $data ) {
@@ -262,7 +263,7 @@ class Custom_Fonts extends Classes\Font_Base {
 		update_post_meta( $post_id, self::FONT_META_KEY, $font_face );
 
 		// Save font face
-		update_post_meta( $post_id, self::FONT_FACE_META_KEY, $this->generate_font_face( $post_id ) );
+		$this->regenerate_font_face( $post_id );
 	}
 
 	public function upload_mimes( $mine_types ) {
@@ -343,6 +344,16 @@ class Custom_Fonts extends Classes\Font_Base {
 			$font_face .= $this->get_font_face_from_data( $font_family, $font_data ) . PHP_EOL;
 		}
 
+		return $font_face;
+	}
+
+	private function regenerate_font_face( $post_id ) {
+		$font_face = $this->generate_font_face( $post_id );
+		if ( false === $font_face ) {
+			return '';
+		}
+
+		update_post_meta( $post_id, self::FONT_FACE_META_KEY, $font_face );
 		return $font_face;
 	}
 
@@ -442,7 +453,7 @@ class Custom_Fonts extends Classes\Font_Base {
 		}
 
 		$font_face = '@font-face {' . PHP_EOL;
-		$font_face .= "\tfont-family: '" . $font_family . "';" . PHP_EOL;
+		$font_face .= "\tfont-family: " . CssString::quote( (string) $font_family ) . ';' . PHP_EOL;
 
 		if ( empty( $data['font_type'] ) || 'variable' !== $data['font_type'] ) {
 			$font_face .= "\tfont-style: " . $data['font_style'] . ';' . PHP_EOL;
@@ -508,21 +519,21 @@ class Custom_Fonts extends Classes\Font_Base {
 		$id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type = %s LIMIT 1", $font_family, Fonts_Manager::CPT ) );
 
 		if ( $id ) {
-			return get_post_meta( $id, self::FONT_FACE_META_KEY, true );
+			return $this->regenerate_font_face( $id );
 		}
 
 		return '';
 	}
 
 	public function render_preview_column( $post_id ) {
-		$font_face = get_post_meta( $post_id, self::FONT_FACE_META_KEY, true );
+		$font_face = $this->regenerate_font_face( $post_id );
 
 		if ( ! $font_face ) {
 			return;
 		}
 
 		// PHPCS - the variable $font_face is CSS. the property $this->font_preview_phrase is safe.
-		printf( '<style>%s</style><span style="font-family: \'%s\';">%s</span>', $font_face, esc_html( get_the_title( $post_id ) ), $this->font_preview_phrase ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		printf( '<style>%s</style><span style="font-family: %s;">%s</span>', $font_face, esc_attr( CssString::quote( (string) get_the_title( $post_id ) ) ), $this->font_preview_phrase ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	public function render_type_column( $post_id ) {
@@ -543,7 +554,7 @@ class Custom_Fonts extends Classes\Font_Base {
 
 	public function get_font_data( $post_id, $post_title ) {
 		$font_data = [
-			'font_face' => $this->generate_font_face( $post_id ),
+			'font_face' => $this->regenerate_font_face( $post_id ),
 			'post_id' => $post_id,
 		];
 
@@ -575,7 +586,10 @@ class Custom_Fonts extends Classes\Font_Base {
 	 * @param Base   $post_css
 	 */
 	public function enqueue_font( $font_family, $font_data, $post_css ) {
-		$font_faces = isset( $font_data['font_face'] ) ? $font_data['font_face'] : $this->get_font_face_by_font_family( $font_family );
+		$font_faces = $this->get_font_face_by_font_family( $font_family );
+		if ( '' === $font_faces ) {
+			return;
+		}
 		// Add a css comment
 		$custom_css = '/* Start Custom Fonts CSS */' . $font_faces . '/* End Custom Fonts CSS */';
 		$post_css->get_stylesheet()->add_raw_css( $custom_css );

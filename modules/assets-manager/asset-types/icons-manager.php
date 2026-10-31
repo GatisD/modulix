@@ -10,6 +10,7 @@ use Modulix\Base\Editor_One_Trait;
 use Modulix\Modules\AssetsManager\AssetTypes\AdminMenuItems\Custom_Icons_Menu_Item;
 use Modulix\Modules\AssetsManager\AssetTypes\EditorOneMenuItems\Editor_One_Icons_Menu_Item;
 use Modulix\Modules\AssetsManager\Classes;
+use Modulix\Security\PostTypeCapabilities;
 use Elementor\Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -89,6 +90,8 @@ class Icons_Manager {
 			'show_in_nav_menus' => false,
 			'exclude_from_search' => true,
 			'capability_type' => 'post',
+			'capabilities' => PostTypeCapabilities::restricted( self::CPT, self::CAPABILITY ),
+			'map_meta_cap' => true,
 			'hierarchical' => false,
 			'supports' => [ 'title' ],
 		];

@@ -1,7 +1,7 @@
 # How Modulix is built from Elementor Pro
 
-Modulix reuses Elementor Pro's GPL code instead of rewriting it, so existing Pro templates and widget settings keep
-working after the switch. Upstream: Elementor Pro 4.0.4.
+Modulix includes modified GPL-licensed code from Elementor Pro 4.0.4 and preserves stored names and settings for
+supported features. Check compatibility and test the target site before switching. Upstream: Elementor Pro 4.0.4.
 
 1. **Mechanical lift.** `tools/lift.py <pro-root> docs/lift-manifest.txt . 4.0.4` copies the listed files and changes
    only the namespace (`ElementorPro` -> `Modulix`), Pro path and version constants (`ELEMENTOR_PRO_*` ->
@@ -43,3 +43,29 @@ python3 tools/editor-bundle.py /path/to/elementor-pro-4.0.4
 
 The command writes `assets/js/modulix-editor-pro.js`. Use `--out /path/to/file.js` for a comparison build. The editor
 chunks and `assets/css/editor*.css` remain mechanical lifts listed in `docs/lift-manifest.txt`.
+
+## Regenerate the Theme Builder app bundle
+
+Generate the local-only Theme Builder app JavaScript and stylesheet with:
+
+```
+python3 tools/app-bundle.py /path/to/elementor-pro-4.0.4
+```
+
+The command writes `assets/js/modulix-app.js` and `assets/css/modulix-app.css`. It keeps the five local
+`site-editor` routes (overview/type, add new, conditions and import), forces the licensed path, and removes the
+Import/Export Customization entry, Feature Lock/Connect UI, Elementor help links, the unavailable automatic
+screenshot hook and every webpack factory no longer reachable from the site-editor entry. The app has no runtime chunks; its only plugin-local image reference is the mechanically lifted
+`modules/theme-builder/assets/images/conditions-tab.svg`.
+
+## Regenerate the Display Conditions editor bundles
+
+Generate the promotion-free development and production bundles from Elementor Pro 4.0.4 with:
+
+```
+python3 tools/display-conditions-bundle.py /path/to/elementor-pro-4.0.4
+```
+
+The generator rewrites the translation domain to `modulix`, removes the unreachable Pro promotion behavior and
+removes Elementor documentation destinations. It writes `assets/js/display-conditions.js` and
+`assets/js/display-conditions.min.js`.

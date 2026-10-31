@@ -14,6 +14,7 @@ use Modulix\Core\Utils as Pro_Utils;
 use Modulix\Modules\AssetsManager\AssetTypes\AdminMenuItems\Custom_Fonts_Menu_Item;
 use Modulix\Modules\AssetsManager\AssetTypes\EditorOneMenuItems\Editor_One_Fonts_Menu_Item;
 use Modulix\Modules\AssetsManager\Classes;
+use Modulix\Security\PostTypeCapabilities;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -100,6 +101,8 @@ class Fonts_Manager {
 			'show_in_nav_menus' => false,
 			'exclude_from_search' => true,
 			'capability_type' => 'post',
+			'capabilities' => PostTypeCapabilities::restricted( self::CPT, self::CAPABILITY ),
+			'map_meta_cap' => true,
 			'hierarchical' => false,
 			'supports' => [ 'title' ],
 		];

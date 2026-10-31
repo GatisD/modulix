@@ -192,6 +192,8 @@ namespace {
         public function __construct(private array $documents) {}
         public function canReadSite(): bool { return true; }
         public function canReadDocument(int $postId): bool { return in_array($postId, $this->documents, true); }
+        public function canEditDocument(int $postId): bool { return in_array($postId, $this->documents, true); }
+        public function canCreateDocument(string $postType): bool { return true; }
         public function userId(): int { return 7; }
     }
 

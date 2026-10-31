@@ -4,6 +4,6 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 ver=$(sed -n 's/^ \* Version: //p' modulix.php)
 rm -rf build && mkdir -p build/modulix
-cp -R modulix.php NOTICE.md license.txt src base core modules assets build/modulix/
+cp -R modulix.php uninstall.php NOTICE.md license.txt src base core modules assets languages build/modulix/
 (cd build && zip -qr "modulix-$ver.zip" modulix)
 echo "build/modulix-$ver.zip"

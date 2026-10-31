@@ -2,9 +2,11 @@
 namespace Modulix\Modules\Library;
 // Modulix: derived from Elementor Pro 4.0.4, modules/library/module.php. Copyright (C) 2016-2024 Elementor Ltd., GPL-3.0-or-later.
 // Modified by Modulix (2026-10-23): namespace ElementorPro -> Modulix, text domain -> modulix.
-// Modified by Modulix (2026-10-23): Template widget only. Not lifted yet: [elementor-template] shortcode and the WordPress "Elementor Library" widget (no fleet use 2026-10-23; after a security review), deprecated autocomplete callbacks.
+// Modified by Modulix (2026-10-23): WordPress library widget and deprecated autocomplete callbacks removed.
+// Modified by Modulix (2026-10-24): guarded [elementor-template] shortcode restored.
 
 use Modulix\Base\Module_Base;
+use Modulix\Modules\Library\Classes\Shortcode;
 use Modulix\Plugin;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -12,6 +14,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 class Module extends Module_Base {
+	public function __construct() {
+		parent::__construct();
+
+		new Shortcode();
+	}
 
 	public function get_widgets() {
 		return [

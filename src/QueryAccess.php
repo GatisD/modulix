@@ -33,6 +33,15 @@ final class QueryAccess {
         return $name;
     }
 
+    public static function taxonomy_allowed(
+        ?object $taxonomy,
+        bool $isViewable,
+        bool $canAssignTerms,
+        bool $canManageTerms
+    ): bool {
+        return $taxonomy !== null && ($isViewable || $canAssignTerms || $canManageTerms);
+    }
+
     /** @return string[] */
     private static function fields(bool $with_email): array {
         return $with_email ? ['ID', 'display_name', 'user_email'] : ['ID', 'display_name'];

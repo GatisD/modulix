@@ -2,3 +2,5 @@
 /build/
 .phpunit.result.cache
 __pycache__/
+/docs/runbooks/fleet-switch/sites/
+/docs/runbooks/fleet-switch/*.local.json

@@ -52,6 +52,8 @@ final class Plugin {
         $registry->add('wp-cli', fn() => new ElementorModule(\Modulix\Modules\WpCli\Module::class));
         $registry->add('assets-manager', fn() => new ElementorModule(\Modulix\Modules\AssetsManager\Module::class));
         $registry->add('woocommerce', fn() => new ElementorModule(\Modulix\Modules\Woocommerce\Module::class));
+        $registry->add('display-conditions', fn() => new ElementorModule(\Modulix\Modules\DisplayConditions\Module::class));
+        $registry->add('app', fn() => new App());
         $registry->add('editor', fn() => new Editor());
         $registry->add('frontend', fn() => new Frontend());
         $registry->add('no-upsell', fn() => new NoUpsell());

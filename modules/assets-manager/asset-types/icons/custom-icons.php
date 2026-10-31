@@ -9,6 +9,7 @@ use Modulix\Modules\AssetsManager\Classes\Assets_Base;
 use Modulix\Modules\AssetsManager\AssetTypes\Icons_Manager;
 use Elementor\Core\Common\Modules\Ajax\Module as Ajax;
 use Modulix\Plugin;
+use Modulix\Security\IconArchive;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -130,15 +131,32 @@ class Custom_Icons extends  Assets_Base {
 
 		// PHPCS - It will be sanitized in the next line.
 		$json = json_decode( stripslashes_deep( $_POST[ self::META_KEY ] ), true ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
-		foreach ( $json as $property => $value ) {
-			$json[ $property ] = $this->sanitize_text_field_recursive( $value );
+		if ( ! is_array( $json ) ) {
+			return $post_id;
 		}
 
-		// All good save the files array
-		update_post_meta( $post_id, self::META_KEY, json_encode( $json ) );
+		$this->persist_icon_set_config( (int) $post_id, $json );
+	}
 
-		// Force refresh of list in Options Table
+	private function persist_icon_set_config( int $post_id, array $config ): bool {
+		if ( ! array_key_exists( 'prefix', $config ) || ! is_string( $config['prefix'] ) ) {
+			return false;
+		}
+
+		$config = $this->sanitize_text_field_recursive( $config );
+		$encoded = json_encode( $config );
+		if ( false === $encoded ) {
+			return false;
+		}
+
+		update_post_meta( $post_id, self::META_KEY, $encoded );
+		$stored = json_decode( (string) get_post_meta( $post_id, self::META_KEY, true ), true );
+		if ( $config !== $stored ) {
+			return false;
+		}
+
 		self::clear_icon_list_option();
+		return true;
 	}
 
 	public static function get_supported_icon_sets() {
@@ -196,9 +214,9 @@ class Custom_Icons extends  Assets_Base {
 	private function upload() {
 		$file = Utils::_unstable_get_super_global_value( $_FILES, 'zip_upload' );
 		$filename = $file['name'];
-		$ext = pathinfo( $filename, PATHINFO_EXTENSION );
+		$ext = strtolower( pathinfo( $filename, PATHINFO_EXTENSION ) );
 		if ( 'zip' !== $ext ) {
-			unlink( $filename );
+			$this->cleanup_uploaded_file( $file );
 			return new \WP_Error( 'unsupported_file', esc_html__( 'Only zip files are allowed', 'modulix' ) );
 		}
 		if ( ! function_exists( 'wp_handle_upload' ) ) {
@@ -207,76 +225,137 @@ class Custom_Icons extends  Assets_Base {
 		// Handler upload archive file.
 		$upload_result = wp_handle_upload( $file, [ 'test_form' => false ] );
 		if ( isset( $upload_result['error'] ) ) {
-			unlink( $filename );
+			$this->cleanup_uploaded_file( $file );
 			return new \WP_Error( 'upload_error', $upload_result['error'] );
 		}
 		return $upload_result['file'];
 	}
 
-	private function extract_zip( $file, $to ) {
-		// TODO: Move to core as a util.
-		$valid_field_types = [
-			'css',
-			'eot',
-			'html',
-			'json',
-			'otf',
-			'svg',
-			'ttf',
-			'txt',
-			'woff',
-			'woff2',
-		];
-
-		$zip = new \ZipArchive();
-
-		$zip->open( $file );
-
-		$valid_entries = [];
-
-		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-		for ( $i = 0; $i < $zip->numFiles; $i++ ) {
-			$zipped_file_name = $zip->getNameIndex( $i );
-			$dirname = pathinfo( $zipped_file_name, PATHINFO_DIRNAME );
-
-			// Skip the OS X-created __MACOSX directory.
-			if ( '__MACOSX/' === substr( $dirname, 0, 9 ) ) {
-				continue;
-			}
-
-			$zipped_extension = pathinfo( $zipped_file_name, PATHINFO_EXTENSION );
-			// Skip files with transversal paths.
-			if ( strpos( $zipped_file_name, '..' ) !== false ) {
-				continue;
-			}
-
-			if ( in_array( $zipped_extension, $valid_field_types, true ) ) {
-				$valid_entries[] = $zipped_file_name;
-			}
+	private function cleanup_uploaded_file( $file ) {
+		if ( isset( $file['tmp_name'] ) && is_string( $file['tmp_name'] ) && is_uploaded_file( $file['tmp_name'] ) ) {
+			@unlink( $file['tmp_name'] );
 		}
-
-		$unzip_result = false;
-
-		if ( ! empty( $valid_entries ) ) {
-			$unzip_result = $zip->extractTo( $to, $valid_entries );
-		}
-
-		if ( ! $unzip_result ) {
-			$unzip_result = new \WP_Error( 'error', esc_html__( 'Could not unzip or empty archive.', 'modulix' ) );
-		}
-
-		@unlink( $file );
-
-		return $unzip_result; // TRUE | WP_Error instance.
 	}
 
-	private function upload_and_extract_zip() {
+	private function extract_zip( $file, $to ) {
+		if ( ! is_file( $file ) || filesize( $file ) > IconArchive::MAX_ARCHIVE_BYTES ) {
+			@unlink( $file );
+			return new \WP_Error( 'archive_too_large', esc_html__( 'The archive is too large.', 'modulix' ) );
+		}
+
+		$zip = new \ZipArchive();
+		if ( true !== $zip->open( $file ) ) {
+			@unlink( $file );
+			return new \WP_Error( 'invalid_archive', esc_html__( 'Could not open the archive.', 'modulix' ) );
+		}
+
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		if ( $zip->numFiles < 1 || $zip->numFiles > IconArchive::MAX_ENTRIES ) {
+			$zip->close();
+			@unlink( $file );
+			return new \WP_Error( 'invalid_archive', esc_html__( 'The archive has an invalid number of entries.', 'modulix' ) );
+		}
+
+		$entries = [];
+		$seen = [];
+		$total_size = 0;
+		// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+		for ( $i = 0; $i < $zip->numFiles; $i++ ) {
+			$name = $zip->getNameIndex( $i );
+			if ( ! is_string( $name ) || str_starts_with( $name, '__MACOSX/' ) ) {
+				continue;
+			}
+			$stat = $zip->statIndex( $i );
+			$attributes = 0;
+			$operating_system = 0;
+			$zip->getExternalAttributesIndex( $i, $operating_system, $attributes );
+			$mode = ( $attributes >> 16 ) & 0170000;
+			$size = is_array( $stat ) ? (int) ( $stat['size'] ?? -1 ) : -1;
+			$compressed_size = is_array( $stat ) ? (int) ( $stat['comp_size'] ?? -1 ) : -1;
+
+			if ( isset( $seen[ $name ] ) || ! IconArchive::entryAllowed( $name, $size, $compressed_size, $mode ) ) {
+				$zip->close();
+				@unlink( $file );
+				return new \WP_Error( 'invalid_archive_entry', esc_html__( 'The archive contains an invalid entry.', 'modulix' ) );
+			}
+			$seen[ $name ] = true;
+			$total_size += $size;
+			if ( $total_size > IconArchive::MAX_EXPANDED_BYTES ) {
+				$zip->close();
+				@unlink( $file );
+				return new \WP_Error( 'archive_too_large', esc_html__( 'The expanded archive is too large.', 'modulix' ) );
+			}
+			if ( ! IconArchive::entryNameAllowed( $name ) ) {
+				continue;
+			}
+			$entries[] = [ 'name' => $name, 'size' => $size ];
+		}
+
+		if ( file_exists( $to ) || is_link( $to ) || ! mkdir( $to, 0700, true ) ) {
+			$zip->close();
+			@unlink( $file );
+			return new \WP_Error( 'archive_write_error', esc_html__( 'Could not prepare the archive directory.', 'modulix' ) );
+		}
+		$base = realpath( $to );
+		if ( false === $base ) {
+			$zip->close();
+			@unlink( $file );
+			return new \WP_Error( 'archive_write_error', esc_html__( 'Could not prepare the archive directory.', 'modulix' ) );
+		}
+
+		foreach ( $entries as $entry ) {
+			$name = $entry['name'];
+			$target = $base . DIRECTORY_SEPARATOR . str_replace( '/', DIRECTORY_SEPARATOR, rtrim( $name, '/' ) );
+			if ( str_ends_with( $name, '/' ) ) {
+				wp_mkdir_p( $target );
+				continue;
+			}
+
+			wp_mkdir_p( dirname( $target ) );
+			$parent = realpath( dirname( $target ) );
+			if ( false === $parent || ( $parent !== $base && ! str_starts_with( $parent, $base . DIRECTORY_SEPARATOR ) ) ) {
+				return $this->archive_write_error( $zip, $file, $to );
+			}
+
+			$source = $zip->getStream( $name );
+			$destination = @fopen( $target, 'xb' );
+			if ( false === $source || false === $destination ) {
+				if ( is_resource( $source ) ) {
+					fclose( $source );
+				}
+				if ( is_resource( $destination ) ) {
+					fclose( $destination );
+				}
+				return $this->archive_write_error( $zip, $file, $to );
+			}
+			$written = stream_copy_to_stream( $source, $destination, IconArchive::MAX_FILE_BYTES + 1 );
+			fclose( $source );
+			fclose( $destination );
+			if ( $written !== $entry['size'] ) {
+				return $this->archive_write_error( $zip, $file, $to );
+			}
+			@chmod( $target, 0644 );
+		}
+
+		$zip->close();
+		@unlink( $file );
+		return true;
+	}
+
+	private function archive_write_error( $zip, $file, $to ) {
+		$zip->close();
+		@unlink( $file );
+		self::get_wp_filesystem()->rmdir( $to, true );
+		return new \WP_Error( 'archive_write_error', esc_html__( 'Could not extract the archive.', 'modulix' ) );
+	}
+
+	protected function upload_and_extract_zip() {
 		$zip_file = $this->upload();
 		if ( is_wp_error( $zip_file ) ) {
 			return $zip_file;
 		}
 		$filesystem = self::get_wp_filesystem();
-		$extract_to = trailingslashit( get_temp_dir() . pathinfo( $zip_file, PATHINFO_FILENAME ) );
+		$extract_to = trailingslashit( get_temp_dir() ) . 'modulix-icons-' . wp_generate_uuid4();
 
 		$unzipped = $this->extract_zip( $zip_file, $extract_to );
 		if ( is_wp_error( $unzipped ) ) {

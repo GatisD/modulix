@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ProModulesManagerTest extends TestCase {
     public function test_names_match_the_lifted_modules_in_the_registry(): void {
-        $ids = array_values(array_diff(Plugin::registry()->ids(), ['editor', 'frontend', 'no-upsell']));
+        $ids = array_values(array_diff(Plugin::registry()->ids(), ['app', 'editor', 'frontend', 'no-upsell']));
         $this->assertSame($ids, array_keys(ProModulesManager::MODULES));
     }
 

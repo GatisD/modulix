@@ -2,16 +2,18 @@
 /**
  * Plugin Name: Modulix
  * Plugin URI: https://github.com/GatisD/modulix
- * Description: Open-source replacement for Elementor Pro features: Theme Builder (header, footer, single, archive, search, 404), Posts, Archive Posts, Portfolio, theme widgets, Gallery, Template, dynamic tags incl. ACF, Motion Effects, Sticky, Nav Menu, Floating Buttons, Custom CSS, and a readiness check to run before switching. Contains code derived from Elementor Pro (GPLv3), modified - see NOTICE.md.
+ * Description: Independent open-source plugin for use with Elementor. Supports the features listed for this release and includes modified GPL-licensed code from Elementor Pro 4.0.4.
  * Author: Gatis Daugavietis
- * Version: 0.7.0
+ * Version: 1.0.0
  * Requires PHP: 8.1
  * Requires Plugins: elementor
+ * Text Domain: modulix
+ * Domain Path: /languages
  * License: GPL-3.0-or-later
  */
 defined('ABSPATH') || exit;
 
-define('MODULIX_VERSION', '0.7.0');
+define('MODULIX_VERSION', '1.0.0');
 define('MODULIX_PATH', plugin_dir_path(__FILE__));
 define('MODULIX_MODULES_PATH', MODULIX_PATH . 'modules/');
 define('MODULIX_URL', plugins_url('/', __FILE__));
@@ -20,6 +22,10 @@ define('MODULIX_ASSETS_PATH', MODULIX_PATH . 'assets/');
 define('MODULIX_ASSETS_URL', MODULIX_URL . 'assets/');
 
 require_once __DIR__ . '/src/autoload.php';
+
+add_action('init', static function (): void {
+    load_plugin_textdomain('modulix', false, dirname(plugin_basename(__FILE__)) . '/languages');
+});
 
 function modulix_mode(): string {
     return \Modulix\ActivationGuard::mode(\Modulix\ActivationGuard::activePlugins(
@@ -41,6 +47,7 @@ register_activation_hook(__FILE__, static function (): void {
 
 // Registered when the plugin file loads, so themes and plugins that look for Elementor Pro classes later find them.
 if (modulix_mode() === \Modulix\ActivationGuard::FULL) {
+    \Modulix\NoUpsell::registerEarly();
     \Modulix\Compat\ProAliases::register();
     \Modulix\Mcp\Bootstrap::register();
 }
@@ -65,5 +72,6 @@ add_action('plugins_loaded', static function (): void {
     }
     add_action('elementor/init', static function (): void {
         \Modulix\Plugin::registry()->bootAll();
+        do_action('elementor_pro/init');
     });
 });

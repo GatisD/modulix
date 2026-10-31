@@ -11,8 +11,8 @@ final class Scanner {
     private array $covered;
 
     /**
-     * @param array{widgets?: string[], tags?: string[], documents?: string[], features?: string[]} $pro
-     * @param array{widgets?: string[], tags?: string[], documents?: string[], features?: string[]} $covered
+     * @param array{widgets?: string[], tags?: string[], documents?: string[], locations?: string[], features?: string[]} $pro
+     * @param array{widgets?: string[], tags?: string[], documents?: string[], locations?: string[], features?: string[]} $covered
      */
     public function __construct(array $pro, array $covered) {
         $this->pro = self::items($pro);
@@ -22,9 +22,11 @@ final class Scanner {
     public static function forModulix(): self {
         return new self(
             ['widgets' => ProCatalog::WIDGETS, 'tags' => ProCatalog::TAGS,
-             'documents' => ProCatalog::DOCUMENT_TYPES, 'features' => ProCatalog::FEATURES],
+             'documents' => ProCatalog::DOCUMENT_TYPES, 'locations' => ProCatalog::THEME_LOCATIONS,
+             'features' => ProCatalog::FEATURES],
             ['widgets' => Coverage::WIDGETS, 'tags' => Coverage::TAGS,
-             'documents' => Coverage::DOCUMENT_TYPES, 'features' => Coverage::FEATURES],
+             'documents' => Coverage::DOCUMENT_TYPES, 'locations' => Coverage::THEME_LOCATIONS,
+             'features' => Coverage::FEATURES],
         );
     }
 
@@ -48,7 +50,8 @@ final class Scanner {
     /** @param array<string, string[]> $lists @return array<string, true> */
     private static function items(array $lists): array {
         $out = [];
-        foreach (['widgets' => 'widget', 'tags' => 'tag', 'documents' => 'document', 'features' => 'feature'] as $key => $prefix) {
+        foreach (['widgets' => 'widget', 'tags' => 'tag', 'documents' => 'document',
+                  'locations' => 'location', 'features' => 'feature'] as $key => $prefix) {
             foreach ($lists[$key] ?? [] as $name) {
                 $out["$prefix:$name"] = true;
             }

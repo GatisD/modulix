@@ -132,6 +132,8 @@ final class Coverage {
         'contact-url',
         'current-date-time',
         'featured-image-data',
+        'internal-url',
+        'lightbox',
         'off-canvas',
         'page-title',
         'post-custom-field',
@@ -145,10 +147,15 @@ final class Coverage {
         'post-title',
         'post-url',
         'popup',
+        'reload-page',
+        'request-arg',
+        'shortcode',
         'site-logo',
         'site-tagline',
         'site-title',
         'site-url',
+        'user-info',
+        'user-profile-picture',
         'woocommerce-add-to-cart',
         'woocommerce-category-image-tag',
         'woocommerce-product-content-tag',
@@ -168,18 +175,33 @@ final class Coverage {
         'archive',
         'code_snippet',
         'error-404',
+        'floating-buttons',
         'footer',
         'header',
         'loop-item',
         'popup',
         'product',
         'product-archive',
+        'product-post',
         'search-results',
         'single',
         'single-page',
         'single-post',
+        'widget',
+    ];
+
+    /** Theme Builder locations registered by Modulix modules. */
+    public const THEME_LOCATIONS = [
+        'archive',
+        'elementor_body_end',
+        'elementor_body_start',
+        'elementor_head',
+        'footer',
+        'header',
+        'popup',
+        'single',
     ];
 
     /** Element, page and site settings features; keys in Readiness\Usage. */
-    public const FEATURES = ['attributes', 'custom_css', 'motion_fx', 'page_transitions', 'scroll_snap', 'sticky'];
+    public const FEATURES = ['attributes', 'custom_css', 'display_conditions', 'motion_fx', 'page_transitions', 'scroll_snap', 'sticky'];
 }

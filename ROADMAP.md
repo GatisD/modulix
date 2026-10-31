@@ -1,7 +1,7 @@
 # Modulix roadmap
 
-Goal: Modulix covers most of what sites use from Elementor Pro, on its own: an existing Pro site switches without
-losing widgets, templates or the plugins and themes that integrate with Pro, and a new site can be built from scratch.
+Goal: Modulix implements the features in milestones 0-7 while preserving the stored Elementor names for supported
+widgets, tags and documents. A site should switch only after the readiness and compatibility checks pass.
 
 The work is split into small steps. Each step is one GitHub issue (linked below, grouped in milestones) and one pull
 request, can be tested on its own, and names what it depends on. Pick any open step whose dependencies are done; see
@@ -11,28 +11,32 @@ Size is the Elementor Pro code the step lifts (PHP lines): **S** under 1,000, **
 **XL** over 8,000. Labels: `good first issue` (a widget without server endpoints), `needs-maintainer` (endpoints,
 uploads, outgoing requests, capabilities or money), `spike` (a short investigation that ends in a written decision).
 
-## Done (0.6)
+## Done and tested
 
-Theme Builder documents (header, footer, single, single post, single page, archive, search results, 404) with their
-display conditions; theme widgets (site logo and title, page and post title, post content, excerpt and featured image,
-archive title); Posts, Portfolio, Archive Posts; Nav Menu; Template; Gallery; Floating Buttons; Sticky; Motion
-Effects; Custom CSS; dynamic tags incl. ACF; no upsells in the editor and admin.
+This section is limited to recorded browser, server and parity results. A registered module is not enough to appear
+here.
 
-## Done and tested (0.7.0)
+Testing was recorded on 2026-10-31 in WordPress 7.1.3 with Elementor 4.3.5 and WooCommerce 11.2.1, using Elementor
+Pro 4.0.4 without a licence as the reference.
 
-Tested against Elementor Pro 4.0.4 on a test site (frontend at desktop and mobile width, the editor, and end to end in
-a browser and on the server): F1-F5, F7, F8; S1; T3, T5; L1-L5; FO1, FO4, FO5; P1; W1-W18; WC1, WC3.
+- Frontend checks covered 43 test pages and 21 site URLs at 1366 px and 390 px. Markup, layout, console output and the
+  PHP log matched the reference in these checks except for the two licence-dependent reference results: Floating
+  Buttons produced no output, and the popup dynamic tag produced `#`.
+- The 43 test documents opened in the editor with the same document type, widgets and console output as the
+  reference.
+- One browser-and-server run passed all checks for forms, file upload, Login, Popups, popup form actions, Custom Code,
+  Global Widget, Loop Carousel, the WooCommerce product-to-order flow, WooCommerce archive templates, the Theme
+  Builder app, the conditions dialog, Display Conditions, custom attributes, Role Manager, page transitions and
+  scroll snap, submissions administration and webhook delivery.
+- An automated scan of the admin and editor screens, including Site Settings, found no upgrade prompts.
 
-## Included in 0.7.0, end-to-end tests pending
-
-The code is in the release and reviewed; the step closes once it is tested end to end on a test site:
-S2-S5, T4, FO2 (admin page and export), FO3, P2, WC2, WC4. Help with testing is welcome: report what you find in the
-step's issue.
+The automated run did not cover the Custom Fonts or Custom Icons upload flow, or the WooCommerce settings in Site
+Settings. The same checks fail against the reference, so this is a test-kit limitation rather than a known Modulix
+defect. Test these areas by hand before switching a site that uses them.
 
 ## Milestone 0 - Foundation (0.7)
 
-Makes the rest possible for more people: a check that tells a site owner whether they can switch, support for plugins
-and themes that look for Elementor Pro, and the tooling contributors need.
+Adds the switch-readiness report, compatibility aliases and contributor tooling used by later milestones.
 
 | Step | What | Size | Depends on | Label |
 |---|---|---|---|---|
@@ -147,23 +151,20 @@ Themes and plugins that check for Elementor Pro are tested with Modulix, and the
 | [X10](../../issues/64) | YITH WooCommerce Dynamic Pricing and Discounts |
 | [X11](../../issues/65) | Advanced AJAX Product Filters |
 
-## Version 1.0
+## Version 1.0.0
 
-The code for Milestones 2-7 already ships in 0.7.0-beta.2, so there are no separate 0.8-0.11 releases: 0.7.0 is the
-stable release of what is tested end to end, and the next stable release is 1.0.0.
-
-
-Milestones 0-7 are done, the readiness check covers every supported feature, and the ecosystem list has a result for
-each entry.
+Milestones 0-7 are included in 1.0.0. The readiness check covers the supported features listed in the release, and
+the recorded validation status and known limitations are stated above.
 
 ## Not planned
 
 Licence checks, Elementor Connect, telemetry and anything that needs Elementor's servers (cloud templates, kits from
-the cloud, Elementor AI). AI help comes through Modulix MCP instead (see Later). Payments and Notes may come later. Elementor 4 atomic widgets follow once the atomic editor is the
-default in Elementor.
+the cloud, Elementor AI). AI help through Modulix MCP is planned separately (see Later). Payments and Notes may come
+later. Elementor 4 atomic widgets follow once the atomic editor is the default in Elementor.
 
 ## Later
 
-**Modulix MCP**: a Model Context Protocol server, so an AI agent can build and edit pages, templates and design on an
-Elementor site and check the result. It takes the place of Elementor's AI features: you connect the agent you choose
-(for example Claude or Codex) instead of buying AI credits from one vendor.
+**Planned: public Modulix MCP support**. The release payload contains an experimental, opt-in MCP integration that is
+disabled by default and requires the WordPress MCP Adapter. It can expose 12 separately selectable abilities for site
+and document reads, readiness, previews, document and element changes, conditions, kit updates and publishing. Write
+abilities are not preselected. This surface is not part of the 1.0.0 feature list while public support remains planned.

@@ -74,10 +74,10 @@ final class McpWidgetSchemaAndValidatorTest extends TestCase {
         ]);
         $validator = new ElementTreeValidator($registry, new PassthroughMcpHtmlSanitizer());
         $result = $validator->validate([
-            ['elType' => 'widget', 'widgetType' => 'missing', 'settings' => [], 'elements' => []],
-            ['elType' => 'widget', 'widgetType' => 'heading', 'settings' => ['unknown' => 'x'], 'elements' => []],
-            ['elType' => 'widget', 'widgetType' => 'heading', 'settings' => ['count' => []], 'elements' => []],
-            ['elType' => 'widget', 'widgetType' => 'heading', 'settings' => ['size' => 'xl'], 'elements' => []],
+            ['id' => 'missing-widget', 'elType' => 'widget', 'widgetType' => 'missing', 'settings' => [], 'elements' => []],
+            ['id' => 'unknown-setting', 'elType' => 'widget', 'widgetType' => 'heading', 'settings' => ['unknown' => 'x'], 'elements' => []],
+            ['id' => 'wrong-type', 'elType' => 'widget', 'widgetType' => 'heading', 'settings' => ['count' => []], 'elements' => []],
+            ['id' => 'invalid-option', 'elType' => 'widget', 'widgetType' => 'heading', 'settings' => ['size' => 'xl'], 'elements' => []],
         ]);
 
         $this->assertFalse($result['valid']);
@@ -108,7 +108,7 @@ final class McpWidgetSchemaAndValidatorTest extends TestCase {
             public function sanitize(string $html): string { return str_replace('<script>bad()</script>', '', $html); }
         };
         $result = (new ElementTreeValidator($registry, $sanitizer))->validate([
-            ['elType' => 'widget', 'widgetType' => 'text-editor', 'settings' => [
+            ['id' => 'text-editor', 'elType' => 'widget', 'widgetType' => 'text-editor', 'settings' => [
                 'editor' => '<p>Safe</p><script>bad()</script>',
                 'custom_css' => 'selector::before { content: "<script>bad()</script>"; }',
                 'html' => '<div>Safe</div><script>bad()</script>',
@@ -143,6 +143,33 @@ final class McpWidgetSchemaAndValidatorTest extends TestCase {
 
         $this->assertSame('tree_too_deep', $deep['errors'][0]['code']);
         $this->assertSame('too_many_elements', $wide['errors'][0]['code']);
+    }
+
+    public function test_every_element_requires_a_non_empty_globally_unique_string_id(): void {
+        $validator = new ElementTreeValidator(new ArraySchemaRegistry([
+            'container' => ['name' => 'container', 'type' => 'container', 'controls' => []],
+        ]), new PassthroughMcpHtmlSanitizer());
+
+        $result = $validator->validate([
+            ['elType' => 'container', 'settings' => [], 'elements' => []],
+            ['id' => '', 'elType' => 'container', 'settings' => [], 'elements' => []],
+            ['id' => 'duplicate', 'elType' => 'container', 'settings' => [], 'elements' => [[
+                'id' => 'duplicate',
+                'elType' => 'container',
+                'settings' => [],
+                'elements' => [],
+            ]],
+            ],
+        ]);
+
+        $this->assertSame([
+            ['code' => 'invalid_element_id', 'path' => 'elements[0].id'],
+            ['code' => 'invalid_element_id', 'path' => 'elements[1].id'],
+            ['code' => 'duplicate_element_id', 'path' => 'elements[2].elements[0].id'],
+        ], array_map(static fn(array $error): array => [
+            'code' => $error['code'],
+            'path' => $error['path'],
+        ], $result['errors']));
     }
 
     public function test_hostile_shapes_return_exact_path_errors_without_throwing(): void {

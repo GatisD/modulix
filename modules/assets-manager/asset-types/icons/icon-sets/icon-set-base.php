@@ -24,7 +24,7 @@ abstract class Icon_Set_Base {
 	 *
 	 * @var array
 	 */
-	protected $allowed_webfont_extensions = [ 'woff', 'woff2', 'ttf', 'svg', 'otf', 'eot' ];
+	protected $allowed_webfont_extensions = [ 'woff', 'woff2', 'ttf', 'otf', 'eot' ];
 
 	abstract protected function extract_icon_list();
 
@@ -146,30 +146,50 @@ abstract class Icon_Set_Base {
 	}
 
 	public function move_files( $post_id ) {
-		// @todo: save only needed files
 		$wp_filesystem = Custom_Icons::get_wp_filesystem();
 		$to = $this->get_ensure_upload_dir( $this->dir_name ) . '/';
-
-		foreach ( $wp_filesystem->dirlist( $this->directory, false, true ) as $file ) {
-			$full_path = $this->directory . $file['name'];
-			if ( $wp_filesystem->is_dir( $full_path ) ) {
-				$wp_filesystem->mkdir( $to . $file['name'] );
-
-				foreach ( $file['files'] as $filename => $sub_file ) {
-					$new_path = $to . $file['name'] . DIRECTORY_SEPARATOR . $filename;
-					$wp_filesystem->move( $full_path . DIRECTORY_SEPARATOR . $filename, $new_path );
-					$this->insert_attachment( $this->get_url() . '/' . $file['name'] . '/' . $filename, $new_path, $post_id );
-				}
-			} else {
-				$new_path = $to . $file['name'];
-				$wp_filesystem->move( $full_path, $new_path );
-				$this->insert_attachment( $this->get_url() . '/' . $file['name'], $new_path, $post_id );
-			}
-		}
+		$this->move_selected_files( $wp_filesystem, $this->directory, $to, '', $post_id );
 
 		$this->cleanup_temp_files( $wp_filesystem );
 		update_post_meta( $post_id, '_elementor_icon_set_path', $to );
 		$this->directory = $to;
+	}
+
+	private function move_selected_files( $wp_filesystem, $from, $to, $prefix, $post_id ) {
+		$files = $wp_filesystem->dirlist( $from, false, false );
+		if ( ! is_array( $files ) ) {
+			return;
+		}
+
+		foreach ( $files as $file ) {
+			$name = $file['name'];
+			$relative = ltrim( $prefix . '/' . $name, '/' );
+			$source = trailingslashit( $from ) . $name;
+			if ( $wp_filesystem->is_dir( $source ) ) {
+				$this->move_selected_files( $wp_filesystem, $source, $to, $relative, $post_id );
+				continue;
+			}
+
+			if ( ! $this->should_publish_file( $relative ) ) {
+				continue;
+			}
+
+			$destination = trailingslashit( $to ) . str_replace( '/', DIRECTORY_SEPARATOR, $relative );
+			$wp_filesystem->mkdir( dirname( $destination ) );
+			if ( ! $wp_filesystem->move( $source, $destination ) ) {
+				throw new \RuntimeException( 'Could not move an icon package file.' );
+			}
+			$this->insert_attachment( $this->get_url() . '/' . $relative, $destination, $post_id );
+		}
+	}
+
+	private function should_publish_file( $relative ) {
+		$relative = str_replace( DIRECTORY_SEPARATOR, '/', $relative );
+		if ( in_array( $relative, $this->files_to_save, true ) ) {
+			return true;
+		}
+
+		return in_array( strtolower( pathinfo( $relative, PATHINFO_EXTENSION ) ), $this->allowed_webfont_extensions, true );
 	}
 
 	private function insert_attachment( $file_url, $filename, $post_id = 0 ) {

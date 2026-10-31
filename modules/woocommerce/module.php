@@ -26,6 +26,7 @@ use Elementor\App\Modules\ImportExportCustomization\Processes\Import;
 use Elementor\App\Modules\ImportExportCustomization\Processes\Revert;
 use Modulix\Modules\Woocommerce\ImportExportCustomization\Woocommerce_Settings;
 use Modulix\Modules\Woocommerce\ImportExportCustomization\Woocommerce_Settings_Revert;
+use Modulix\Security\PublicDocumentAccess;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -37,6 +38,7 @@ class Module extends Module_Base {
 	const TEMPLATE_MINI_CART = 'cart/mini-cart.php';
 	const OPTION_NAME_USE_MINI_CART = 'use_mini_cart_template';
 	const MENU_CART_FRAGMENTS_ACTION = 'elementor-menu-cart-fragments';
+	const MAX_MENU_CART_DOCUMENTS = 20;
 	const MENU_CART_LICENSE_FEATURE_NAME = 'woocommerce-menu-cart';
 	const SINGLE_PRODUCT_TEMPLATE_LICENSE_FEATURE_NAME = 'product-single';
 	const ARCHIVE_PRODUCT_TEMPLATE_LICENSE_FEATURE_NAME = 'product-archive';
@@ -327,12 +329,26 @@ class Module extends Module_Base {
 		if ( ! is_array( $templates ) ) {
 			wp_send_json( [] );
 		}
+		$templates = PublicDocumentAccess::normalizeIds( $templates, self::MAX_MENU_CART_DOCUMENTS );
+		if ( empty( $templates ) ) {
+			wp_send_json( [] );
+		}
 
-		if ( 'true' === ProUtils::_unstable_get_super_global_value( $_POST, 'is_editor' ) ) {
+		$is_editor = 'true' === ProUtils::_unstable_get_super_global_value( $_POST, 'is_editor' );
+		if ( $is_editor ) {
+			foreach ( $templates as $id ) {
+				if ( ! current_user_can( 'edit_post', $id ) ) {
+					wp_send_json( [] );
+				}
+			}
 			Plugin::elementor()->editor->set_edit_mode( true );
 		}
 
 		foreach ( $templates as $id ) {
+			$post = get_post( $id );
+			if ( ! PublicDocumentAccess::allowed( $post, $is_editor && current_user_can( 'edit_post', $id ) ) ) {
+				continue;
+			}
 			$this->get_all_fragments( $id, $all_fragments );
 		}
 

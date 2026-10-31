@@ -142,7 +142,7 @@ final class LiftedReferencesTest extends TestCase {
             }
             foreach (array_unique($names) as $fqcn) {
                 $fqcn = ltrim($fqcn, '\\');
-                // Popup's Forms action is lifted for template compatibility but deliberately not registered until Forms exists.
+                // Popup's Forms action is lifted for runtime registration after the Forms module exists.
                 if (str_ends_with($file, '/modules/popup/form-action.php') && str_starts_with($fqcn, 'Modulix\\Modules\\Forms\\')) { continue; }
                 if (isset($declared[strtolower($fqcn)])) { continue; }
                 $path = LiftedAutoloader::path($fqcn, $root);
@@ -199,7 +199,7 @@ final class LiftedReferencesTest extends TestCase {
 
     /** Plugin::instance() in lifted code is the Pro shim: only the members the shim has may be used. */
     public function test_plugin_instance_members_exist(): void {
-        $supported = ['modules_manager', 'php_api'];
+        $supported = ['app', 'modules_manager', 'php_api'];
         $bad = [];
         foreach (self::files() as $file) {
             $src = (string) file_get_contents($file);

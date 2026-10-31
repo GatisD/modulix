@@ -53,6 +53,7 @@ final class ProModulesManager {
         'wp-cli' => \Modulix\Modules\WpCli\Module::class,
         'assets-manager' => \Modulix\Modules\AssetsManager\Module::class,
         'woocommerce' => \Modulix\Modules\Woocommerce\Module::class,
+        'display-conditions' => \Modulix\Modules\DisplayConditions\Module::class,
     ];
 
     /** Like Elementor Pro: one module by name, all active modules without a name, null when unknown or inactive. */

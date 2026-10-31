@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
-"""Writes the PHP class Modulix\\Readiness\\ProCatalog: the widget and dynamic tag names an Elementor Pro release
+"""Writes the PHP class Modulix\\Readiness\\ProCatalog: the names and feature categories an Elementor Pro release
 registers, so the readiness check can tell Pro names from core and third-party ones.
 Usage: tools/pro-catalog.py <pro-root> <version> > src/Readiness/ProCatalog.php
 Document types and features are fixed lists below: they are few, and Pro names some of them through constants."""
 import glob, os, re, sys
 
 NAME = re.compile(r"function get_name\(\)[^{]*\{\s*(?://[^\n]*\n\s*)*return\s+'([^']+)'\s*;")
+ELEMENT_TYPE = re.compile(r"function get_element_type\(\)[^{]*\{\s*(?://[^\n]*\n\s*)*return\s+'([^']+)'\s*;")
 ABSTRACT = re.compile(r"^\s*abstract\s+class\s", re.M)
-DOCUMENT_TYPES = ["archive", "code_snippet", "error-404", "footer", "header", "loop-item", "popup", "product",
+NAMESPACE = re.compile(r"^\s*namespace\s+([^;]+);", re.M)
+CLASS = re.compile(r"^\s*(?:final\s+)?class\s+([A-Za-z_][A-Za-z0-9_]*)", re.M)
+USE = re.compile(r"^\s*use\s+([^;]+);", re.M)
+REGISTER = re.compile(r"->register\(\s*new\s+([\\A-Za-z_][\\A-Za-z0-9_]*)\s*\(")
+DOCUMENT_TYPES = ["archive", "code_snippet", "error-404", "floating-buttons", "footer", "header", "loop-item", "popup", "product",
                   "product-archive", "product-post", "search-results", "single", "single-page", "single-post", "widget"]
-FEATURES = ["attributes", "custom_css", "display_conditions", "motion_fx", "page_transitions", "scroll_snap", "sticky"]
+THEME_LOCATIONS = ["archive", "elementor_body_end", "elementor_body_start", "elementor_head", "floating_buttons",
+                   "footer", "header", "popup", "single"]
+FEATURES = ["atomic_custom_css", "attributes", "custom_css", "display_conditions", "interactions", "motion_fx",
+            "page_transitions", "scroll_snap", "sticky"]
 
 
 def names(root, patterns):
@@ -26,12 +34,57 @@ def names(root, patterns):
     return sorted(out)
 
 
+def registered_element_types(root):
+    """Names returned by directly registered element classes, including classes outside widgets/ directories."""
+    sources = {}
+    classes = {}
+    for path in glob.glob(os.path.join(root, "modules/**/*.php"), recursive=True):
+        with open(path, encoding="utf-8", errors="replace") as f:
+            src = f.read()
+        sources[path] = src
+        namespace = NAMESPACE.search(src)
+        class_name = CLASS.search(src)
+        if namespace and class_name:
+            classes[f"{namespace.group(1).strip()}\\{class_name.group(1)}"] = src
+
+    out = set()
+    for src in sources.values():
+        registrations = REGISTER.findall(src)
+        if not registrations:
+            continue
+        namespace = NAMESPACE.search(src)
+        current_namespace = namespace.group(1).strip() if namespace else ""
+        imports = {}
+        for imported in USE.findall(src):
+            imported = imported.strip()
+            if " as " in imported.lower():
+                fqcn, alias = re.split(r"\s+as\s+", imported, maxsplit=1, flags=re.I)
+                imports[alias.strip()] = fqcn.strip(" \\")
+            else:
+                fqcn = imported.strip(" \\")
+                imports[fqcn.rsplit("\\", 1)[-1]] = fqcn
+
+        for registered in registrations:
+            if registered.startswith("\\"):
+                fqcn = registered.lstrip("\\")
+            elif "\\" in registered:
+                fqcn = f"{current_namespace}\\{registered}" if current_namespace else registered
+            else:
+                fqcn = imports.get(registered, f"{current_namespace}\\{registered}".strip("\\"))
+            class_src = classes.get(fqcn)
+            if class_src and not ABSTRACT.search(class_src):
+                element_type = ELEMENT_TYPE.search(class_src)
+                if element_type:
+                    out.add(element_type.group(1))
+    return sorted(out)
+
+
 def php_list(values):
     return "[\n" + "".join(f"        '{v}',\n" for v in values) + "    ]"
 
 
 def render(root, version):
-    widgets = names(root, ["modules/**/widgets/**/*.php"])
+    widgets = sorted(set(names(root, ["modules/**/widgets/**/*.php"])) | set(registered_element_types(root)))
     tags = names(root, ["modules/**/tags/**/*.php", "modules/*/tag.php"])
     return (
         "<?php\nnamespace Modulix\\Readiness;\n\n"
@@ -41,6 +94,7 @@ def render(root, version):
         f"    public const WIDGETS = {php_list(widgets)};\n"
         f"    public const TAGS = {php_list(tags)};\n"
         f"    public const DOCUMENT_TYPES = {php_list(DOCUMENT_TYPES)};\n"
+        f"    public const THEME_LOCATIONS = {php_list(THEME_LOCATIONS)};\n"
         f"    public const FEATURES = {php_list(FEATURES)};\n"
         "}\n"
     )

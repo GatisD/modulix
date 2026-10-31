@@ -111,38 +111,144 @@ final class McpLimitsAndLogTest extends TestCase {
         $this->assertSame('batch_too_large', $limits->checkBatchSize([['id' => 1], ['id' => 2], ['id' => 3]]));
     }
 
+    public function test_write_check_applies_request_batch_and_rate_limits_before_work(): void {
+        $clock = new class implements Clock { public function now(): int { return 0; } };
+        $store = new class implements TransientStore {
+            public int $increments = 0;
+            public function increment(string $key, int $expiration): int|false { return ++$this->increments; }
+        };
+        $limits = new RequestLimits($store, $clock, 60, 1, 30, 2);
+
+        $this->assertSame('request_too_large', $limits->checkWrite(7, ['payload' => str_repeat('x', 40)], 1));
+        $this->assertSame('batch_too_large', $limits->checkWrite(7, [], 3));
+        $this->assertSame(0, $store->increments);
+        $this->assertNull($limits->checkWrite(7, [], 2));
+        $this->assertSame('rate_limit', $limits->checkWrite(7, [], 2));
+    }
+
     public function test_log_table_schema_has_the_specified_columns(): void {
         $sql = LogTable::schemaSql('wp_', 'DEFAULT CHARACTER SET utf8mb4');
 
         $this->assertStringContainsString('wp_modulix_mcp_log', $sql);
-        foreach (['created_at', 'user_id', 'ability', 'document_id', 'revision_id', 'summary', 'size'] as $column) {
+        foreach (['created_at', 'user_id', 'ability', 'document_id', 'revision_id', 'status', 'summary', 'size'] as $column) {
             $this->assertStringContainsString($column, $sql);
         }
+        $this->assertStringContainsString("status varchar(16) NOT NULL DEFAULT 'done'", $sql);
     }
 
-    public function test_change_log_uses_a_prepared_query_and_a_server_generated_summary(): void {
+    public function test_change_log_lifecycle_inserts_pending_then_marks_done_with_the_revision_id(): void {
         $db = new class {
             public string $prefix = 'wp_';
+            public int $insert_id = 77;
             public array $prepared = [];
-            public string $query = '';
+            public array $queries = [];
             public function prepare(string $query, mixed ...$args): string {
-                $this->prepared = [$query, $args];
-                return 'prepared-query';
+                $this->prepared[] = [$query, $args];
+                return 'prepared-' . count($this->prepared);
             }
             public function query(string $query): int {
-                $this->query = $query;
+                $this->queries[] = $query;
                 return 1;
             }
         };
         $log = new ChangeLog($db, static fn(): string => '2026-10-24 12:00:00');
 
-        $this->assertTrue($log->write(9, 'modulix/update-elements', 12, 13, 456, 4));
-        $this->assertSame('prepared-query', $db->query);
-        $this->assertStringContainsString('INSERT INTO wp_modulix_mcp_log', $db->prepared[0]);
+        $rowId = $log->begin(9, 'modulix/update-elements', 12, 456, 4, ['updated' => 1]);
+
+        $this->assertSame(77, $rowId);
+        $this->assertSame('pending', $db->prepared[0][1][4]);
+        $this->assertSame(0, $db->prepared[0][1][5]);
+        $this->assertTrue($log->complete($rowId, 13));
+        $this->assertStringContainsString("status = 'done'", $db->prepared[1][0]);
+        $this->assertContains(13, $db->prepared[1][1]);
+    }
+
+    public function test_change_log_can_mark_a_pending_row_failed(): void {
+        $db = new class {
+            public string $prefix = 'wp_';
+            public int $insert_id = 8;
+            public array $prepared = [];
+            public function prepare(string $query, mixed ...$args): string {
+                $this->prepared[] = [$query, $args];
+                return 'prepared';
+            }
+            public function query(string $query): int { return 1; }
+        };
+        $log = new ChangeLog($db);
+
+        $this->assertTrue($log->fail(8));
+        $this->assertStringContainsString('SET status = %s, revision_id = %d', $db->prepared[0][0]);
+        $this->assertSame(['failed', 0, 8], $db->prepared[0][1]);
+    }
+
+    public function test_change_log_can_mark_a_restore_failure_with_its_revision_id(): void {
+        $db = new class {
+            public string $prefix = 'wp_';
+            public array $prepared = [];
+            public function prepare(string $query, mixed ...$args): string {
+                $this->prepared[] = [$query, $args];
+                return 'prepared';
+            }
+            public function query(string $query): int { return 1; }
+        };
+        $log = new ChangeLog($db);
+
+        $this->assertTrue($log->fail(8, 'restore_failed', 700));
+        $this->assertSame(['restore_failed', 700, 8], $db->prepared[0][1]);
+        $this->assertFalse($log->fail(8, 'unsupported', 700));
+    }
+
+    public function test_change_log_uses_a_prepared_query_and_a_server_generated_summary(): void {
+        $db = new class {
+            public string $prefix = 'wp_';
+            public int $insert_id = 41;
+            public array $prepared = [];
+            public array $queries = [];
+            public function prepare(string $query, mixed ...$args): string {
+                $this->prepared[] = [$query, $args];
+                return 'prepared-' . count($this->prepared);
+            }
+            public function query(string $query): int {
+                $this->queries[] = $query;
+                return 1;
+            }
+        };
+        $log = new ChangeLog($db, static fn(): string => '2026-10-24 12:00:00');
+
+        $this->assertSame(41, $log->begin(9, 'modulix/update-elements', 12, 456, 4));
+        $this->assertSame('prepared-1', $db->queries[0]);
+        $this->assertStringContainsString('INSERT INTO wp_modulix_mcp_log', $db->prepared[0][0]);
         $this->assertSame(
-            'ability=modulix/update-elements document_id=12 revision_id=13 element_count=4',
-            $db->prepared[1][5]
+            'ability=modulix/update-elements document_id=12 revision_id=0 element_count=4',
+            $db->prepared[0][1][6]
         );
+        $this->assertTrue($log->complete(41, 13));
+    }
+
+    public function test_change_log_records_only_server_generated_change_counts(): void {
+        $db = new class {
+            public string $prefix = 'wp_';
+            public int $insert_id = 42;
+            public array $prepared = [];
+            public function prepare(string $query, mixed ...$args): string { $this->prepared[] = [$query, $args]; return 'prepared'; }
+            public function query(string $query): int { return 1; }
+        };
+
+        (new ChangeLog($db, static fn(): string => '2026-10-24 12:00:00'))->begin(
+            9,
+            'modulix/update-elements',
+            12,
+            456,
+            4,
+            ['added' => 1, 'updated' => 2, 'moved' => 1, 'deleted' => 0, 'page_settings' => 0, 'ignored' => 99]
+        );
+
+        $this->assertSame(
+            'ability=modulix/update-elements document_id=12 revision_id=0 element_count=4'
+                . ' added_count=1 updated_count=2 moved_count=1 deleted_count=0 page_settings_count=0',
+            $db->prepared[0][1][6]
+        );
+        $this->assertStringNotContainsString('ignored', $db->prepared[0][1][6]);
     }
 
     public function test_recent_change_log_rows_use_a_prepared_query(): void {
@@ -167,8 +273,9 @@ final class McpLimitsAndLogTest extends TestCase {
     public function test_request_credentials_cannot_enter_the_change_log_summary(): void {
         $db = new class {
             public string $prefix = 'wp_';
-            public array $args = [];
-            public function prepare(string $query, mixed ...$args): string { $this->args = $args; return 'prepared'; }
+            public int $insert_id = 43;
+            public array $prepared = [];
+            public function prepare(string $query, mixed ...$args): string { $this->prepared[] = [$query, $args]; return 'prepared'; }
             public function query(string $query): int { return 1; }
         };
 
@@ -179,15 +286,15 @@ final class McpLimitsAndLogTest extends TestCase {
         ];
         $payload = json_encode($request, JSON_THROW_ON_ERROR);
         (new ChangeLog($db, static fn(): string => '2026-10-24 12:00:00'))
-            ->write(1, 'modulix/update-elements', 12, 13, strlen($payload), count($request['elements']));
+            ->begin(1, 'modulix/update-elements', 12, strlen($payload), count($request['elements']));
 
         $this->assertSame(
-            'ability=modulix/update-elements document_id=12 revision_id=13 element_count=2',
-            $db->args[5]
+            'ability=modulix/update-elements document_id=12 revision_id=0 element_count=2',
+            $db->prepared[0][1][6]
         );
-        $this->assertStringNotContainsString('hunter2', $db->args[5]);
-        $this->assertStringNotContainsString('abc123', $db->args[5]);
-        $this->assertStringNotContainsString('password', $db->args[5]);
-        $this->assertStringNotContainsString('token', $db->args[5]);
+        $this->assertStringNotContainsString('hunter2', $db->prepared[0][1][6]);
+        $this->assertStringNotContainsString('abc123', $db->prepared[0][1][6]);
+        $this->assertStringNotContainsString('password', $db->prepared[0][1][6]);
+        $this->assertStringNotContainsString('token', $db->prepared[0][1][6]);
     }
 }

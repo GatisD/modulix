@@ -91,6 +91,7 @@ class Module extends Module_Base {
 	}
 
 	public function add_form_action() {
+		$this->add_component( 'form-action', new Form_Action() );
 	}
 
 	public static function add_popup_to_location( $popup_id ) {

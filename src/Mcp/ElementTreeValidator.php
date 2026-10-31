@@ -72,6 +72,17 @@ final class ElementTreeValidator {
         ];
     }
 
+    public function validateSettingsPatch(array $settings, array $controls, string $path = 'settings'): array {
+        $errors = [];
+        $clean = $settings;
+        $this->validateControlSettings($clean, $controls, $path, $errors);
+        return [
+            'valid' => $errors === [],
+            'errors' => $errors,
+            'settings' => $clean,
+        ];
+    }
+
     private function resolveLimit(string $filter, ?int $override, int $default, int $cap): int {
         $value = $override ?? $default;
         if ($override === null) {
@@ -135,6 +146,7 @@ final class ElementTreeValidator {
     }
 
     private function validateElements(array &$elements, array &$errors): void {
+        $ids = [];
         reset($elements);
         $stack = [[
             'elements' => &$elements,
@@ -168,6 +180,22 @@ final class ElementTreeValidator {
                     );
                 }
             }
+            $id = $element['id'] ?? null;
+            if (!is_string($id) || $id === '') {
+                $errors[] = $this->error(
+                    'invalid_element_id',
+                    $elementPath . '.id',
+                    'Element id must be a non-empty string.'
+                );
+            } elseif (isset($ids[$id])) {
+                $errors[] = $this->error(
+                    'duplicate_element_id',
+                    $elementPath . '.id',
+                    'Element ids must be unique in the whole document.'
+                );
+            } else {
+                $ids[$id] = $elementPath;
+            }
             $this->validateElementFieldTypes($element, $elementPath, $errors);
 
             $elementType = isset($element['elType']) && is_string($element['elType'])
@@ -193,7 +221,7 @@ final class ElementTreeValidator {
                     );
                 } elseif (isset($element['settings']) && is_array($element['settings'])) {
                     $controls = isset($schema['controls']) && is_array($schema['controls']) ? $schema['controls'] : [];
-                    $this->validateSettings($element['settings'], $controls, $elementPath . '.settings', $errors);
+                    $this->validateControlSettings($element['settings'], $controls, $elementPath . '.settings', $errors);
                 }
             }
 
@@ -217,9 +245,6 @@ final class ElementTreeValidator {
     }
 
     private function validateElementFieldTypes(array $element, string $path, array &$errors): void {
-        if (isset($element['id']) && !is_string($element['id'])) {
-            $errors[] = $this->error('wrong_type', $path . '.id', 'Element id must be a string.');
-        }
         if (!isset($element['elType']) || !is_string($element['elType']) || $element['elType'] === '') {
             $errors[] = $this->error('wrong_type', $path . '.elType', 'Element type must be a non-empty string.');
         }
@@ -252,7 +277,7 @@ final class ElementTreeValidator {
         }
     }
 
-    private function validateSettings(array &$settings, array $controls, string $path, array &$errors): void {
+    private function validateControlSettings(array &$settings, array $controls, string $path, array &$errors): void {
         $byName = [];
         foreach ($controls as $control) {
             if (is_array($control) && isset($control['name']) && is_string($control['name'])) {
@@ -323,7 +348,7 @@ final class ElementTreeValidator {
                         $errors[] = $this->error('wrong_type', $rowPath, 'Repeater rows must be objects.');
                         continue;
                     }
-                    $this->validateSettings($row, $fields, $rowPath, $errors);
+                    $this->validateControlSettings($row, $fields, $rowPath, $errors);
                 }
                 unset($row);
             }

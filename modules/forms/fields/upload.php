@@ -231,11 +231,9 @@ class Upload extends Field_Base {
 			return false;
 		}
 
-		// WordPress-known extensions need real type confirmation. Field-approved custom extensions keep Pro's
-		// behaviour because wp_check_filetype_and_ext() cannot confirm types outside WordPress's MIME registry.
 		$checked_filetype = wp_check_filetype_and_ext( $file['tmp_name'], $file['name'] );
 
-		return UploadCheck::isAllowed( $file_extension, $checked_filetype, wp_get_mime_types() );
+		return UploadCheck::fileAllowed( $file['tmp_name'], $file['name'], $checked_filetype, wp_get_mime_types() );
 	}
 
 	/**
@@ -446,10 +444,6 @@ class Upload extends Field_Base {
 	 */
 	private function get_ensure_upload_dir() {
 		$path = $this->get_upload_dir();
-		if ( file_exists( $path . '/index.php' ) ) {
-			return $path;
-		}
-
 		wp_mkdir_p( $path );
 
 		$files = [
@@ -464,6 +458,11 @@ class Upload extends Field_Base {
 				'file' => '.htaccess',
 				'content' => [
 					'Options -Indexes',
+					'RemoveHandler .php .phtml .phar .cgi .pl .py .rb .sh',
+					'RemoveType .php .phtml .phar .cgi .pl .py .rb .sh',
+					'<IfModule mod_php.c>',
+					'	php_flag engine off',
+					'</IfModule>',
 					'<ifModule mod_headers.c>',
 					'	<Files *.*>',
 					'       Header set Content-Disposition attachment',
@@ -471,12 +470,24 @@ class Upload extends Field_Base {
 					'</IfModule>',
 				],
 			],
+			[
+				'file' => 'web.config',
+				'content' => [
+					'<?xml version="1.0" encoding="UTF-8"?>',
+					'<configuration><system.webServer>',
+					'<directoryBrowse enabled="false" />',
+					'<handlers accessPolicy="Read" />',
+					'<httpProtocol><customHeaders><add name="Content-Disposition" value="attachment" /></customHeaders></httpProtocol>',
+					'</system.webServer></configuration>',
+				],
+			],
 		];
 
 		foreach ( $files as $file ) {
-			if ( ! file_exists( trailingslashit( $path ) . $file['file'] ) ) {
-				$content = implode( PHP_EOL, $file['content'] );
-				@ file_put_contents( trailingslashit( $path ) . $file['file'], $content );
+			$target = trailingslashit( $path ) . $file['file'];
+			$content = implode( PHP_EOL, $file['content'] );
+			if ( ! file_exists( $target ) || file_get_contents( $target ) !== $content ) {
+				@ file_put_contents( $target, $content );
 			}
 		}
 

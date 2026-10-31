@@ -1,96 +1,118 @@
 # Modulix
 
-Open-source drop-in replacement for Elementor Pro features. Switch off Elementor Pro, switch on Modulix, and the
-templates and widgets you already built keep working: same widget names, same settings, same Theme Builder
-conditions. No licence key, no upsells in the editor.
+Modulix is an independently maintained, open-source GPL WordPress plugin for use with Elementor. It supports the
+features and template formats listed for each release. For supported features, it preserves existing stored widget
+names and settings, so those Elementor documents do not need to be converted before a switch.
 
-Modulix is built from Elementor Pro's own GPL code (see [How it is built](#how-it-is-built)), so it renders the
-same markup as Pro. It runs in production since October 2026.
+This is an independent project. It is not affiliated with, endorsed by or sponsored by Elementor. References to
+Elementor and Elementor Pro identify upstream software and compatibility. Their product names and trademarks belong
+to their respective owners. The project does not include an Elementor subscription, official support or access to
+paid Elementor services.
 
-## What works today (0.7.0)
+## What works in 1.0.0
 
 | Area | Included |
 |---|---|
-| Theme Builder | Header, footer, single, single post, single page, archive, search results and 404 templates; the Theme Builder menu opens the theme templates list |
-| Display Conditions | Rules that decide where each Theme Builder template appears |
-| Popup | Popup templates, display settings, triggers and dynamic tag |
-| Forms | Form and Login widgets, form actions, validation, uploads with WordPress-confirmed known file types and field-approved custom extensions, and submissions |
-| WP-CLI | Theme Builder condition cache reset command |
-| Site-wide assets | Custom Fonts, Custom Icons and Adobe Fonts |
-| WooCommerce | Product and archive templates, product dynamic tags, Products, Cart, Checkout, My Account, Menu Cart and purchase widgets |
+| Theme Builder | Template overview, add new, local import and export, and display conditions for header, footer, single post, single page, archive, search results, 404, product and product archive templates |
+| Element conditions | Display Conditions based on visitor, page, post, date, archive, URL and dynamic values |
+| Popups | Popup documents, display conditions, triggers, timing, dynamic tag and form actions |
+| Forms | Form and Login widgets, validation, uploads, stored submissions, email, redirect, webhook and the bundled service integrations |
+| Site assets | Custom Fonts, Custom Icons and Adobe Fonts |
+| WooCommerce | Product and archive templates, product dynamic tags, Products, Cart, Checkout, My Account, Purchase Summary, Notices, Menu Cart and purchase widgets |
 | Theme widgets | Site Logo, Site Title, Page Title, Post Title, Post Content, Post Excerpt, Post Featured Image, Archive Title, Author Box, Breadcrumbs, Post Comments, Post Info, Post Navigation, Search Form and Sitemap |
 | Loop content | Loop Item templates, Loop Grid, Loop Carousel, Taxonomy Filter and Search |
-| Widgets | Posts, Portfolio, Archive Posts (with pagination and load more), Nav Menu (dropdown and mobile menu), Template, Gallery, Global Widget, Animated Headline, Flip Box, Call to Action, Price Table, Price List, Countdown, Share Buttons, Blockquote, Table of Contents, Hotspot, Off-Canvas, Progress Tracker, Code Highlight, Slides, Video Playlist, Facebook Page, Button, Comments and Embed, Mega Menu, Lottie, Link in Bio, Nested Carousel, Media Carousel, Testimonial Carousel and Reviews, Floating Buttons (contact buttons and floating bars) |
-| Effects | Sticky, Motion Effects (scrolling and mouse), Custom CSS and custom attributes on elements and pages, page transitions and scroll snap |
-| Custom Code | Snippets in the document head, body start and body end, with conditions and import/export |
-| Editor and admin | Elementor Pro's editor scripts (nested elements, Mega Menu, Loop Filter, WooCommerce widgets, Global Widget, forms); role-based editor restrictions and element permissions; no "Go Pro" cards, locked widgets, upgrade banners or upgrade buttons |
-| Dynamic tags | Post, archive, site, author, comments and date tags, Contact URL, ACF fields (text, image, URL, color, number, file, date) |
-| Switching (from 0.7.0-beta.1) | Readiness check next to an active Elementor Pro (Tools -> Modulix, `wp modulix check`); themes and plugins that call Elementor Pro classes get the matching Modulix classes |
+| Widgets | Posts, Portfolio, Archive Posts, Nav Menu, Template, Gallery, Global Widget, Animated Headline, Flip Box, Call to Action, Price Table, Price List, Countdown, Share Buttons, Blockquote, Table of Contents, Hotspot, Off-Canvas, Progress Tracker, Code Highlight, Slides, Video Playlist, Facebook widgets, Mega Menu, Lottie, Link in Bio, Nested Carousel, Media Carousel, Testimonial Carousel, Reviews and Floating Buttons |
+| Effects and settings | Sticky, Motion Effects, Custom CSS, custom attributes, page transitions, scroll snap, role restrictions and element permissions |
+| Custom Code | Snippets in the document head, body start and body end, with conditions and import or export |
+| Dynamic tags | Post, archive, site, author, current-user, comments and date tags; request parameters; guarded shortcode output; internal URLs; lightbox and reload actions; Contact URL; ACF fields; WooCommerce product tags |
+| Switching | Readiness check while Elementor Pro is active, plus class aliases for themes and plugins that call supported Elementor Pro classes |
+| WP-CLI | Readiness check and Theme Builder condition cache reset |
 
-Tested against Elementor Pro 4.0.4 on a test site, page by page at desktop and mobile width and in the editor: every
-widget in the Widgets row, the theme widgets, Loop Item, Loop Grid, Taxonomy Filter and 21 real site pages; the output
-matches Pro. Tested end to end in a browser and on the server: form submissions with email actions, stored
-submissions, validation and spam protection, file uploads (allowed and rejected types), the Login widget, popups
-(page-load and click triggers, conditions, closing), Custom Code (head, body start, body end, conditions), Global
-Widget, Loop Carousel and WooCommerce (single product template, add to cart, Menu Cart, Cart, Checkout, a cash on
-delivery order, My Account). Not yet tested end to end: form integrations with outside services, the submissions
-admin page and export, popup form actions, WooCommerce archive templates and kit settings, display conditions on
-elements, Custom Fonts and Custom Icons, Role Manager, page transitions and scroll snap; report problems as issues.
+The readiness check reports Pro widgets, dynamic tags, document types, theme locations and modeled features that the
+current site uses but Modulix does not support. It does not inspect every setting inside a supported widget. A missing
+item is a stop condition for the switch unless that item is known to be unused on the live pages, and the settings used
+on the target site still require testing before the switch.
 
-Next: the full Theme Builder app with its conditions editor, the remaining dynamic tags, then Modulix MCP. The
-step-by-step plan is in [ROADMAP.md](ROADMAP.md).
+Theme and plugin results are recorded in the [compatibility table](docs/compatibility.md). A static compatibility
+result does not replace a test on the target site.
 
-If a site uses a Pro widget that Modulix does not have yet, that widget stays empty while Modulix is active. The
-readiness check (step 4 below, from 0.7.0-beta.1) lists every such widget, dynamic tag, template type and feature before you switch.
+Public Modulix MCP support remains planned and is not part of the 1.0.0 feature list. The release payload contains an
+experimental, opt-in MCP integration that is disabled by default and requires the WordPress MCP Adapter. It can expose
+12 separately selectable abilities: site overview, document listing and reading, widget schema, preview URLs,
+readiness checks, document creation, element updates, page settings, conditions, kit updates and publishing. Write
+abilities are not preselected.
 
-Planned: **Modulix MCP** - a Model Context Protocol server, so an AI agent can build and edit pages, templates and
-design on an Elementor site (structure, widgets, styles, Theme Builder conditions) and check the result. It takes the
-place of Elementor's AI features: you connect the agent you choose, for example Claude or Codex.
+## What has been tested
+
+Testing was recorded on 2026-10-31 in WordPress 7.1.3 with Elementor 4.3.5 and WooCommerce 11.2.1, using Elementor
+Pro 4.0.4 without a licence as the reference.
+
+- **Frontend:** 43 test pages and 21 site URLs were checked at 1366 px and 390 px. Markup, layout, console output and
+  the PHP log matched the reference in these checks except where the reference needed a licence: Floating Buttons
+  produced no output in the reference, and the popup dynamic tag produced `#`.
+- **Editor:** The 43 test documents opened with the same document type, widgets and console output as the reference.
+- **End to end:** One browser-and-server run passed all checks for forms, file upload, Login, Popups, popup form
+  actions, Custom Code, Global Widget, Loop Carousel, the WooCommerce product-to-order flow, WooCommerce archive
+  templates, the Theme Builder app, the conditions dialog, Display Conditions, custom attributes, Role Manager, page
+  transitions and scroll snap, submissions administration and webhook delivery.
+- **Upgrade prompts:** An automated scan of the admin and editor screens, including Site Settings, found none.
+
+The automated run did not cover the Custom Fonts or Custom Icons upload flow, or the WooCommerce settings in Site
+Settings. The same checks fail against the reference, so this is a test-kit limitation rather than a known Modulix
+defect. Test these areas by hand before switching a site that uses them.
+
+The required local test commands are:
+
+```sh
+vendor/bin/phpunit
+python3 -m unittest discover -s tests/tools
+MODULIX_ELEMENTOR_CORE=/path/to/elementor-core-4.3.5 python3 -m unittest discover -s tests/tools
+```
 
 ## Requirements
 
-- WordPress with Elementor (free) 3.34 or newer; tested with 3.34.2 and 4.3.5
-- PHP 8.1 or newer
+- WordPress with Elementor (free) 3.34 or newer. The recorded 1.0.0 checks used WordPress 7.1.3 and Elementor 4.3.5.
+- PHP 8.1 or newer.
+- WooCommerce for WooCommerce templates and widgets.
+- WP-CLI only for the command-line readiness check and maintenance commands.
+
+Development additionally requires Composer and Python 3. Browser tests require Node.js and Playwright.
 
 ## Install and switch from Elementor Pro
 
-1. Download `modulix-x.y.z.zip` from [Releases](../../releases).
-2. Back up the site.
-3. Plugins -> Add New -> Upload Plugin, upload the zip.
-4. With 0.7.0-beta.1 or newer, check first: activate Modulix while Elementor Pro is still active. Modulix then runs
-   only its readiness check: open Tools -> Modulix and press "Run the check" (or run `wp modulix check`). It lists
-   the Pro widgets, dynamic tags, template types and features your pages use that Modulix does not cover yet, with
-   links to those pages, and the themes and plugins that call Elementor Pro.
-5. Deactivate Elementor Pro. With 0.7.0-beta.1 or newer, Modulix switches to full mode by itself. With 0.6.x,
-   activate Modulix now (0.6.x refuses to activate while Elementor Pro is active).
-6. Regenerate Elementor's CSS files (in Elementor's Tools) and clear any page cache.
+1. Download the release zip from [Releases](../../releases).
+2. Back up the WordPress database and `wp-content` outside the public web root.
+3. In WordPress, open Plugins -> Add New -> Upload Plugin, upload the zip and activate Modulix while Elementor Pro
+   remains active. Modulix starts in check mode and does not register its feature modules.
+4. Open Tools -> Modulix and run the readiness check, or run `wp modulix check`. Resolve every item that the site
+   still needs. Review the [compatibility table](docs/compatibility.md) for active themes and plugins.
+5. Deactivate Elementor Pro. Do not uninstall it during the first switch. Modulix changes from check mode to full
+   mode automatically.
+6. Regenerate Elementor CSS and data, clear page and object caches, and test the editor plus the public pages that
+   use Pro features.
 
-To go back: deactivate Modulix and activate Elementor Pro again. Modulix does not change your templates or settings.
+See [upgrading and rollback](docs/upgrading.md) for earlier Modulix versions and the rollback procedure.
 
 ## How it is built
 
-Modulix lifts the needed Elementor Pro files with a script that only renames the namespace, constants and
-JavaScript globals, then removes licence checks, telemetry, Elementor Connect and upsells in separate, reviewable
-commits. Every derived file keeps Elementor's copyright line and says what Modulix changed. Before a module is
-released, it is compared with Elementor Pro on a test site: markup, layout at desktop and mobile width, scroll and
-menu states, console and PHP errors. Details: [docs/LIFTING.md](docs/LIFTING.md).
+Modulix copies the required Elementor Pro GPL files with a script that changes namespaces, constants, paths, text
+domains and JavaScript globals. Separate commits remove licence checks, telemetry, Elementor Connect and promotion
+code. Each derived file records its source and modification. See [docs/LIFTING.md](docs/LIFTING.md).
 
 ## Development
 
-```
+```sh
 composer install
 vendor/bin/phpunit
 python3 -m unittest discover -s tests/tools
-tools/build.sh        # build/modulix-<version>.zip
+tools/build.sh
 ```
 
-Issues and pull requests are welcome: pick a step from [ROADMAP.md](ROADMAP.md) and read
-[CONTRIBUTING.md](CONTRIBUTING.md). For security problems see [SECURITY.md](SECURITY.md).
+`tools/build.sh` writes `build/modulix-<version>.zip`. Issues and pull requests should follow
+[CONTRIBUTING.md](CONTRIBUTING.md). Report security problems as described in [SECURITY.md](SECURITY.md). Release
+changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ## Licence and trademarks
 
-GPL-3.0-or-later. Modulix contains code derived from Elementor Pro, Copyright (C) 2016-2024 Elementor Ltd., licensed
-under GPL-3.0-or-later; see [NOTICE.md](NOTICE.md).
-
-Modulix is not affiliated with or endorsed by Elementor Ltd. "Elementor" is a trademark of Elementor Ltd. and is used
-here only to describe compatibility.
+GPL-3.0-or-later. Modulix includes modified GPL-licensed code from Elementor Pro 4.0.4. Original copyright and
+licence notices are retained. Changes are documented in the source and release notes; see [NOTICE.md](NOTICE.md).

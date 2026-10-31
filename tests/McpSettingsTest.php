@@ -1,5 +1,6 @@
 <?php
 use Modulix\Mcp\Bootstrap;
+use Modulix\Mcp\AbilityRegistrar;
 use Modulix\Mcp\Settings;
 use PHPUnit\Framework\TestCase;
 
@@ -19,11 +20,37 @@ final class McpSettingsTest extends TestCase {
     public function test_settings_accept_only_known_abilities(): void {
         $this->assertSame([
             'enabled' => true,
-            'abilities' => ['modulix/get-document'],
+            'abilities' => ['modulix/get-document', 'modulix/update-elements', 'modulix/publish'],
         ], Settings::sanitize([
             'enabled' => '1',
-            'abilities' => ['modulix/get-document', 'modulix/publish', '../secret', ['nested']],
+            'abilities' => [
+                'modulix/get-document',
+                'modulix/update-elements',
+                'modulix/publish',
+                '../secret',
+                ['nested'],
+            ],
         ]));
+    }
+
+    public function test_write_abilities_are_available_but_never_preselected(): void {
+        $this->assertSame([
+            'modulix/create-document',
+            'modulix/update-elements',
+            'modulix/set-page-settings',
+            'modulix/set-conditions',
+            'modulix/update-kit',
+            'modulix/publish',
+        ], Settings::WRITE_ABILITIES);
+        $this->assertSame([
+            'modulix/preview-url',
+            'modulix/readiness',
+        ], Settings::OPTIONAL_READ_ABILITIES);
+        $this->assertSame(Settings::READ_ABILITIES, Settings::defaults()['abilities']);
+        $this->assertSame([], array_intersect(
+            array_merge(Settings::WRITE_ABILITIES, Settings::OPTIONAL_READ_ABILITIES),
+            Settings::defaults()['abilities']
+        ));
     }
 
     public function test_nothing_registers_when_disabled_or_abilities_api_is_missing(): void {
@@ -41,5 +68,10 @@ final class McpSettingsTest extends TestCase {
         $this->assertFalse(Bootstrap::previewFrom('1'));
         $this->assertFalse(Bootstrap::previewFrom(1));
         $this->assertTrue(Bootstrap::previewFrom(true));
+    }
+
+    public function test_m4_catalog_is_behind_the_preview_gate(): void {
+        $this->assertFalse(AbilityRegistrar::previewEnabled(false));
+        $this->assertTrue(AbilityRegistrar::previewEnabled(true));
     }
 }

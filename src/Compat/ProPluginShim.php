@@ -8,6 +8,8 @@ namespace Modulix\Compat;
 final class ProPluginShim {
     private static ?self $instance = null;
     public ProModulesManager $modules_manager;
+    /** The local-only Theme Builder app, matching Elementor Pro's public Plugin::instance()->app member. */
+    public ?object $app = null;
     /** Wrapper around move_uploaded_file() that Forms file uploads call (lifted Pro class; absent in unit tests). */
     public ?object $php_api;
 
