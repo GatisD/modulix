@@ -166,10 +166,10 @@ $root = __DIR__ . '/tests/.icon-upload-' . bin2hex(random_bytes(8));
 wp_mkdir_p(get_temp_dir());
 $archive = $root . '/icons.zip';
 try {
-    // Reuse the actual E2E Fontastic archive, rather than a parallel fixture.
-    preg_match('/const ICON_ZIP_BASE64 = "([^"]+)";/', file_get_contents('tools/e2e/run.mjs'), $match);
-    if (!isset($match[1])) { throw new RuntimeException('E2E icon fixture not found'); }
-    file_put_contents($archive, base64_decode($match[1], true));
+    // The E2E Fontastic archive as a public fixture (same bytes as ICON_ZIP_BASE64 in the internal e2e kit).
+    $b64 = @file_get_contents('tests/fixtures/icons/mx-e2e-icons.zip.b64');
+    if ($b64 === false || trim($b64) === '') { throw new RuntimeException('Icon fixture tests/fixtures/icons/mx-e2e-icons.zip.b64 not found'); }
+    file_put_contents($archive, base64_decode(trim($b64), true));
     $zip = new ZipArchive();
     if ($zip->open($archive) !== true) { throw new RuntimeException('Cannot open fixture'); }
     $files = [];
