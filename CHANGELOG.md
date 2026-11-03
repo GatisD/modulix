@@ -7,6 +7,17 @@ endorsed by or sponsored by Elementor. References to Elementor and Elementor Pro
 compatibility. Their product names and trademarks belong to their respective owners. Modulix does not include an
 Elementor subscription, official support or access to paid Elementor services.
 
+## 1.0.1 - 2026-11-03
+
+### Fixed
+
+- Fixed custom icon uploads for Fontello, IcoMoon and Fontastic, preserving metadata during import and cleaning up
+  temporary directories when discovery fails.
+- Kept Elementor documents in the readiness scan when `_elementor_data` is stored as a PHP array.
+- Stopped reporting whole-site core Floating Buttons as an unsupported theme location.
+- Documented the BeTheme default 404 page compatibility fix for semantic header and footer tags.
+- Expanded the compatibility table with results and notes for 11 themes.
+
 ## 1.0.0 - 2026-11-01
 
 ### Added

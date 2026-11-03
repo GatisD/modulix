@@ -17,6 +17,8 @@ class Fontello extends Icon_Set_Base {
 	protected $allowed_zipped_files = [ 'config.json', 'css/', 'font/' ];
 	protected $allowed_webfont_extensions = [ 'woff', 'woff2', 'ttf', 'otf' ];
 
+	private $config = null;
+
 	protected function prepare() {
 		$name = IconPackageName::validate( (string) $this->get_name() );
 		$this->remove_fontello_styling( $name );
@@ -44,7 +46,11 @@ class Fontello extends Icon_Set_Base {
 	}
 
 	private function get_json() {
-		return json_decode( Utils::_unstable_file_get_contents( $this->directory . $this->data_file ) );
+		// Preparation reads this metadata before move_files() removes the source.
+		if ( null === $this->config ) {
+			$this->config = json_decode( Utils::_unstable_file_get_contents( $this->directory . $this->data_file ) );
+		}
+		return $this->config;
 	}
 
 	protected function extract_icon_list() {

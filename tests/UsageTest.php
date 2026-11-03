@@ -171,6 +171,17 @@ final class UsageTest extends TestCase {
         );
     }
 
+    public function test_floating_buttons_location_depends_on_display_conditions(): void {
+        $this->assertSame(
+            ['document:floating-buttons'],
+            Usage::of(new Document(9, 'Whole site', 'floating-buttons', [], [], '', ['include/general']))
+        );
+        $this->assertSame(
+            ['document:floating-buttons', 'location:floating_buttons'],
+            Usage::of(new Document(10, 'Selected pages', 'floating-buttons', [], [], '', ['include/singular']))
+        );
+    }
+
     public function test_broken_data_is_skipped(): void {
         $doc = self::doc(['oops', ['elType' => 'widget', 'widgetType' => 7, 'settings' => 'x', 'elements' => 'y']], [], '');
         $this->assertSame([], Usage::of($doc));

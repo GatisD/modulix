@@ -4,7 +4,7 @@
  * Plugin URI: https://github.com/GatisD/modulix
  * Description: Independent open-source plugin for use with Elementor. Supports the features listed for this release and includes modified GPL-licensed code from Elementor Pro 4.0.4.
  * Author: Gatis Daugavietis
- * Version: 1.0.0
+ * Version: 1.0.1
  * Requires PHP: 8.1
  * Requires Plugins: elementor
  * Text Domain: modulix
@@ -13,7 +13,7 @@
  */
 defined('ABSPATH') || exit;
 
-define('MODULIX_VERSION', '1.0.0');
+define('MODULIX_VERSION', '1.0.1');
 define('MODULIX_PATH', plugin_dir_path(__FILE__));
 define('MODULIX_MODULES_PATH', MODULIX_PATH . 'modules/');
 define('MODULIX_URL', plugins_url('/', __FILE__));

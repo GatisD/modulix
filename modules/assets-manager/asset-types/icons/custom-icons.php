@@ -300,6 +300,7 @@ class Custom_Icons extends  Assets_Base {
 		if ( false === $base ) {
 			$zip->close();
 			@unlink( $file );
+			self::get_wp_filesystem()->rmdir( $to, true );
 			return new \WP_Error( 'archive_write_error', esc_html__( 'Could not prepare the archive directory.', 'modulix' ) );
 		}
 
@@ -355,28 +356,37 @@ class Custom_Icons extends  Assets_Base {
 			return $zip_file;
 		}
 		$filesystem = self::get_wp_filesystem();
-		$extract_to = trailingslashit( get_temp_dir() ) . 'modulix-icons-' . wp_generate_uuid4();
+		$extract_to = trailingslashit( trailingslashit( get_temp_dir() ) . 'modulix-icons-' . wp_generate_uuid4() );
 
 		$unzipped = $this->extract_zip( $zip_file, $extract_to );
 		if ( is_wp_error( $unzipped ) ) {
 			return $unzipped;
 		}
 
-		// Find the right folder.
-		$source_files = array_keys( $filesystem->dirlist( $extract_to ) );
-		if ( count( $source_files ) === 0 ) {
-			return new \WP_Error( 'incompatible_archive', esc_html__( 'Incompatible archive', 'modulix' ) );
-		}
+		// Discovery owns cleanup until the upload handler receives the directory.
+		$handed_off = false;
+		try {
+			$listing = $filesystem->dirlist( $extract_to );
+			if ( ! is_array( $listing ) || [] === $listing ) {
+				return new \WP_Error( 'incompatible_archive', esc_html__( 'Incompatible archive', 'modulix' ) );
+			}
+			$source_files = array_keys( $listing );
 
-		if ( 1 === count( $source_files ) && $filesystem->is_dir( $extract_to . $source_files[0] ) ) {
-			$directory = $extract_to . trailingslashit( $source_files[0] );
-		} else {
-			$directory = $extract_to;
+			if ( 1 === count( $source_files ) && $filesystem->is_dir( $extract_to . $source_files[0] ) ) {
+				$directory = trailingslashit( $extract_to . $source_files[0] );
+			} else {
+				$directory = $extract_to;
+			}
+			$handed_off = true;
+			return [
+				'directory' => $directory,
+				'extracted_to' => $extract_to,
+			];
+		} finally {
+			if ( ! $handed_off ) {
+				$filesystem->rmdir( $extract_to, true );
+			}
 		}
-		return [
-			'directory' => $directory,
-			'extracted_to' => $extract_to,
-		];
 	}
 
 	public function custom_icons_upload_handler( $data ) {
@@ -389,36 +399,40 @@ class Custom_Icons extends  Assets_Base {
 		if ( is_wp_error( $results ) ) {
 			return $results;
 		}
-		$supported_icon_sets = self::get_supported_icon_sets();
-		foreach ( $supported_icon_sets as $key => $handler ) {
-			/**
-			 * @var IconSets\Icon_Set_Base $icon_set_handler
-			 */
-			$icon_set_handler = new $handler( $results['directory'] );
+		try {
+			$supported_icon_sets = self::get_supported_icon_sets();
+			foreach ( $supported_icon_sets as $key => $handler ) {
+				/**
+				 * @var IconSets\Icon_Set_Base $icon_set_handler
+				 */
+				$icon_set_handler = new $handler( $results['directory'] );
 
-			if ( ! $icon_set_handler ) {
-				continue;
-			}
-			if ( ! $icon_set_handler->is_valid() ) {
-				continue;
-			}
-			try {
-				$icon_set_handler->handle_new_icon_set();
-			} catch ( \InvalidArgumentException $exception ) {
-				continue;
-			}
-			$icon_set_handler->move_files( $this->current_post_id );
-			$config = $icon_set_handler->build_config();
+				if ( ! $icon_set_handler ) {
+					continue;
+				}
+				if ( ! $icon_set_handler->is_valid() ) {
+					continue;
+				}
+				try {
+					$icon_set_handler->handle_new_icon_set();
+				} catch ( \InvalidArgumentException $exception ) {
+					continue;
+				}
+				$icon_set_handler->move_files( $this->current_post_id );
+				$config = $icon_set_handler->build_config();
 
-			// Notify about duplicate prefix
-			if ( self::icon_set_prefix_exists( $config['prefix'] ) ) {
-				$config['duplicate_prefix'] = true;
+				// Notify about duplicate prefix
+				if ( self::icon_set_prefix_exists( $config['prefix'] ) ) {
+					$config['duplicate_prefix'] = true;
+				}
+				return [
+					'config' => $config,
+				];
 			}
-			return [
-				'config' => $config,
-			];
+			return new \WP_Error( 'unsupported_zip_format', esc_html__( 'The zip file provided is not supported!', 'modulix' ) );
+		} finally {
+			self::get_wp_filesystem()->rmdir( $results['extracted_to'], true );
 		}
-		return new \WP_Error( 'unsupported_zip_format', esc_html__( 'The zip file provided is not supported!', 'modulix' ) );
 	}
 
 	public function handle_delete_icon_set( $post_id ) {

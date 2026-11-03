@@ -59,7 +59,7 @@ final class Usage {
         if ($doc->templateType !== '') {
             $items[] = 'document:' . $doc->templateType;
         }
-        $location = self::DOCUMENT_LOCATIONS[$doc->templateType] ?? $doc->themeLocation;
+        $location = self::themeLocation($doc);
         if ($location !== '') {
             $items[] = 'location:' . $location;
         }
@@ -71,6 +71,18 @@ final class Usage {
         $items = array_values(array_unique($items));
         sort($items);
         return $items;
+    }
+
+    private static function themeLocation(Document $doc): string {
+        if ($doc->templateType === 'floating-buttons' && $doc->conditions !== []) {
+            foreach ($doc->conditions as $condition) {
+                if ($condition !== 'include/general') {
+                    return 'floating_buttons';
+                }
+            }
+            return '';
+        }
+        return self::DOCUMENT_LOCATIONS[$doc->templateType] ?? $doc->themeLocation;
     }
 
     /** Dynamic tag names in every __dynamic__ map, including repeater items. @return string[] */

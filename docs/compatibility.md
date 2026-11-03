@@ -1,19 +1,33 @@
 # Theme and plugin compatibility
 
-This page records static compatibility checks against specific releases. A static check follows references to
-Elementor Pro classes, constants, hooks, plugin basenames, asset handles and JavaScript globals through Modulix's
-compatibility layer. It does not replace a WordPress runtime test.
+This page records static and runtime compatibility checks against specific releases. A static check follows
+references to Elementor Pro classes, constants, hooks, plugin basenames, asset handles and JavaScript globals through
+Modulix's compatibility layer. It does not replace a WordPress runtime test.
+
+The free-theme runtime check on 2026-11-01 used WordPress 7.1.3, Elementor 4.3.5 and Elementor Pro 4.0.4 as the
+reference. With each theme active, all 43 fixture pages were captured with the reference and with Modulix at 1366 and
+390 px. The comparison covered markup, layout, browser console output and the PHP log.
 
 Modulix deliberately does not define `ELEMENTOR_PRO_VERSION`. A theme or plugin that uses only that constant or
 the `elementor-pro/elementor-pro.php` plugin basename to enable an integration will take its fallback path.
+
+## Theme notes
+
+### BeTheme default 404 page
+
+BeTheme ships `body.error404.default-404 header, footer { display: none; }`. The first selector hides a semantic
+`header` on the default 404 page; the second hides every semantic `footer` matched by the rule. On the site where this
+was observed, Elementor Pro 3.30.0 rendered the Theme Builder header and footer in `div` elements. Local Elementor Pro
+3.34.2 source and Elementor Pro 4.x default to `<header>` and `<footer>`; Modulix does the same. On an affected site,
+set the header and footer templates' "HTML Tag" setting to `div` so both remain visible.
 
 ## Results
 
 | Step | Theme or plugin | Version checked | Result | Notes |
 |---|---|---:|---|---|
-| X1 | Hello Elementor | 3.5.1 | works with notes | Theme locations use Elementor's public location API and work. Pro-only shortcuts stay hidden and Pro upsells remain visible because the Pro version constant and loader function are absent. |
-| X2 | Astra | 4.14.1 | works with notes | Theme Builder integration resolves through the class aliases. CSS and WooCommerce adjustments guarded only by the Pro version constant are not enabled. |
-| X3 | Woodmart | unavailable | not checked: paid | No source package was available for a static check. |
+| X1 | Hello Elementor | 3.4.9 | works with notes | No differences beyond the reference's licence gates across the 43 fixture pages. Theme locations use Elementor's public location API; shortcuts gated by the Pro version constant or loader remain on their non-Pro paths. |
+| X2 | Astra | 4.14.2 | works with notes | No differences beyond the reference's licence gates across the 43 fixture pages. Theme Builder classes resolve through Modulix's aliases; CSS and WooCommerce adjustments gated only by the Pro version constant remain disabled. |
+| X3 | Woodmart (paid) | not stated | works with notes | Live pages matched. Its Elementor Pro class references resolve through Modulix's aliases, while checks of the Pro version constant remain disabled. Its CSS does not hide semantic header or footer elements. |
 | X4 | Rank Math SEO | 1.0.280 | works with notes | The Elementor integration does not require Pro. Rank Math does not automatically recognize Modulix's Table of Contents widget because its check uses the Pro version constant. |
 | X5 | WPML | unavailable | not checked: paid | No source package was available for a static check. |
 | X6 | Connect Polylang for Elementor | 2.5.5 | works with notes | Theme Builder classes, module access and the Site Editor filter are provided. Two admin-only condition synchronization features stay disabled because their gate uses the Pro version constant. The retired Elementor Library WordPress widget is not provided. |
@@ -22,13 +36,21 @@ the `elementor-pro/elementor-pro.php` plugin basename to enable an integration w
 | X9 | Sticky Header Effects for Elementor | 2.2.3 | works | Pro references are limited to marketplace discovery and a telemetry version field. They do not gate the free plugin's frontend behavior. |
 | X10 | YITH WooCommerce Dynamic Pricing and Discounts | unavailable | not checked: paid | No source package was available for a static check. |
 | X11 | Advanced AJAX Product Filters | 3.3 | not supported | Its Elementor widget and Loop Grid integration file loads only when `ELEMENTOR_PRO_VERSION` is defined, so the integration stays disabled. The plugin's non-Elementor filtering paths are outside this check. |
+| X12 | OceanWP | 4.2.8 | works | No differences beyond the reference's licence gates across the 43 fixture pages. The theme uses Elementor's public Theme Builder location API and has no Elementor Pro references or CSS that hides semantic header or footer elements. |
+| X13 | GeneratePress | 3.6.1 | works with notes | Visitor pages matched the reference. Only a direct view of a Loop Item template differed in width and height; that template view is not a visitor page. |
+| X14 | Kadence | 1.5.2 | works | No differences beyond the reference's licence gates across the 43 fixture pages. Its Elementor Pro class references resolve through Modulix's aliases, and its CSS does not hide semantic header or footer elements. |
+| X15 | Blocksy | 2.1.61 | works | No differences beyond the reference's licence gates across the 43 fixture pages. Its Theme Builder and WooCommerce class references resolve through Modulix's aliases, and its CSS does not hide semantic header or footer elements. |
+| X16 | Neve | 4.2.17 | works with notes | Visitor pages matched the reference. Only a direct view of a Loop Item template differed in width and height; that template view is not a visitor page. |
+| X17 | Sydney | 2.73 | works | No differences beyond the reference's licence gates across the 43 fixture pages. Modulix's generic Theme Builder fallback handled the theme. The theme has no Elementor Pro references or CSS that hides semantic header or footer elements. |
+| X18 | BeTheme (paid) | not stated | works with notes | Its default 404 CSS hides semantic `header` and `footer` elements. Set the header and footer templates' HTML Tag to `div`; after that change, the live pages matched. |
+| X19 | Themify Shoppe (paid) | not stated | works | The live-site check found no Elementor Pro references and no CSS that hides semantic header or footer elements. |
 
 ## Static reference inventory
 
 Paths below are relative to the checked theme or plugin. Translation text domains, comments and CSS class names are
 identified separately because they do not call or detect Elementor Pro.
 
-### X1 - Hello Elementor 3.5.1
+### X1 - Hello Elementor (runtime tested at 3.4.9; static source inspected at 3.5.1)
 
 - `functions.php:169` is a type-only docblock reference to the Theme Builder locations manager. The runtime callback
   receives Modulix's compatible locations manager through Elementor's public hook.
@@ -37,7 +59,7 @@ identified separately because they do not call or detect Elementor Pro.
 - `includes/utils.php:15`, `includes/settings/settings-footer.php:736` and
   `includes/settings/settings-header.php:770` check `ELEMENTOR_PRO_VERSION`. They take their non-Pro UI paths.
 
-### X2 - Astra 4.14.1
+### X2 - Astra 4.14.2
 
 - `inc/compatibility/class-astra-elementor-pro.php:13`, `:17` and `:20` use the Theme Builder module class and
   namespace. `ProAliases` maps the module class; Astra defines its own compatibility class under the Pro namespace.

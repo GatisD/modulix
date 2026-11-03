@@ -1231,7 +1231,7 @@ msgstr ""
 msgid "CSS ID"
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/custom-icons.php:489 modules/assets-manager/asset-types/icons/templates.php:16
+#: modules/assets-manager/asset-types/icons/custom-icons.php:503 modules/assets-manager/asset-types/icons/templates.php:16
 msgid "CSS Prefix"
 msgstr ""
 
@@ -1780,7 +1780,7 @@ msgstr ""
 msgid "Copy to Clipboard"
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/custom-icons.php:349
+#: modules/assets-manager/asset-types/icons/custom-icons.php:350
 msgid "Could not extract the archive."
 msgstr ""
 
@@ -1788,7 +1788,7 @@ msgstr ""
 msgid "Could not open the archive."
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/custom-icons.php:297 modules/assets-manager/asset-types/icons/custom-icons.php:303
+#: modules/assets-manager/asset-types/icons/custom-icons.php:297 modules/assets-manager/asset-types/icons/custom-icons.php:304
 msgid "Could not prepare the archive directory."
 msgstr ""
 
@@ -2624,7 +2624,7 @@ msgstr ""
 msgid "Enter Font Family"
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/custom-icons.php:495
+#: modules/assets-manager/asset-types/icons/custom-icons.php:509
 msgid "Enter Icon Set Name"
 msgstr ""
 
@@ -3160,7 +3160,7 @@ msgstr ""
 msgid "Fontastic"
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/icon-sets/fontello.php:29
+#: modules/assets-manager/asset-types/icons/icon-sets/fontello.php:31
 msgid "Fontello"
 msgstr ""
 
@@ -3638,7 +3638,7 @@ msgstr ""
 msgid "ID"
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/icon-sets/icomoon.php:28
+#: modules/assets-manager/asset-types/icons/icon-sets/icomoon.php:30
 msgid "Icomoon"
 msgstr ""
 
@@ -3666,7 +3666,7 @@ msgstr ""
 msgid "Icon Rotate"
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/custom-icons.php:36 modules/assets-manager/asset-types/icons/custom-icons.php:488
+#: modules/assets-manager/asset-types/icons/custom-icons.php:36 modules/assets-manager/asset-types/icons/custom-icons.php:502
 msgid "Icon Set"
 msgstr ""
 
@@ -3869,7 +3869,7 @@ msgstr ""
 msgid "Include Context"
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/custom-icons.php:368
+#: modules/assets-manager/asset-types/icons/custom-icons.php:371
 msgid "Incompatible archive"
 msgstr ""
 
@@ -7878,7 +7878,7 @@ msgstr ""
 msgid "The uploaded file was only partially uploaded."
 msgstr ""
 
-#: modules/assets-manager/asset-types/icons/custom-icons.php:421
+#: modules/assets-manager/asset-types/icons/custom-icons.php:432
 msgid "The zip file provided is not supported!"
 msgstr ""
 

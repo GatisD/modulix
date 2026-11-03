@@ -46,6 +46,7 @@ final class FrontendTest extends TestCase {
         preg_match("/define\\('MODULIX_VERSION', '([^']+)'\\)/", $src, $c);
         $this->assertNotEmpty($h);
         $this->assertSame($h[1], $c[1] ?? null);
+        $this->assertSame('1.0.1', $h[1]);
     }
 
     public function test_registry_has_plan3_modules_before_no_upsell(): void {

@@ -20,14 +20,19 @@ final class WpSource {
             ));
             foreach ($rows as $row) {
                 $last = (int) $row->ID;
-                $data = json_decode((string) get_post_meta($last, '_elementor_data', true), true);
+                $rawData = get_post_meta($last, '_elementor_data', true);
+                $data = is_array($rawData) ? $rawData : (is_string($rawData) ? json_decode($rawData, true) : null);
                 $settings = get_post_meta($last, '_elementor_page_settings', true);
                 $type = $row->post_type === 'elementor_snippet'
                     ? 'code_snippet'
                     : (string) get_post_meta($last, '_elementor_template_type', true);
+                $conditions = $type === 'floating-buttons'
+                    ? get_post_meta($last, '_elementor_conditions', true)
+                    : [];
                 $location = (string) get_post_meta($last, '_elementor_location', true);
                 yield new Document($last, (string) $row->post_title, $type,
-                    is_array($data) ? $data : [], is_array($settings) ? $settings : [], $location);
+                    is_array($data) ? $data : [], is_array($settings) ? $settings : [], $location,
+                    is_array($conditions) ? $conditions : []);
             }
         } while (count($rows) === $batch);
     }
